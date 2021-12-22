@@ -4,118 +4,49 @@
             [environ.core :refer [env]]
             [morse.handlers :as h]
             [morse.polling :as p]
-            [clojure.java.shell :refer [sh]]
-            [clojure.java.io :as io])
+            [telegram-video-download-bot.util :as util]
+            [telegram-video-download-bot.telegram :as tg])
   (:gen-class))
-
 
 (def token (env :telegram-token))
 (def target-dir (env :target-dir))
+(def POSTFIX " dl")
 
 (h/defhandler handler
 
   (h/message-fn
-   (fn [{{id :id} :chat :as message}]
-     (println "received message")
-     ; (println message)
-     (def message_id (:message_id message))
-     (def patterns
-       (list
-        #"https\:\/\/vm.tiktok.com\/[a-zA-Z0-9]+"
-        #"https\:\/\/www.youtube.com/watch\?v=[a-zA-Z0-9-_]+"
-        #"https\:\/\/youtu.be/[a-zA-Z0-9-_]+"))
-
-     (defn matching-url
-       "return url that match against any of the patterns"
-       [patterns text]
-       (first (filter (fn [x] (not (nil? x)))
-                      (flatten (map (fn [pattern] [(re-find pattern text)])
-                                    patterns)))))
-
-     (defn filename-to-full-path
-       "Full path to the file"
-       [filename]
-       (str/join "/" [target-dir filename]))
-
-     (defn download-file
-       "Download file and return its locations on disk"
-       [url]
-
-       (println "youtube-dl query next")
-       (def filename (str/trim (:out (sh "youtube-dl" "--get-filename" url))))
-       (println "youtube-dl query done")
-       (def full-path (filename-to-full-path filename))
-       (if (.exists (io/file full-path))
-         (println "File already exists: " full-path)
-         (sh "youtube-dl" "-o" full-path url))
-       (if (str/ends-with? full-path ".mp4")
-         (println "File is mp4")
-         (println "File is not mp4"))
-       full-path)
-
-     (defn send-video
-       "Send video back to chat"
-       [token id filename reply_id]
-       (def curl-result (sh "curl" "-q" "-F"
-                            (str "video=@\"" filename "\"")
-                            (str "https://api.telegram.org/bot" token "/sendVideo?chat_id=" id
-                                 (if reply_id (str "&reply_to_message_id=" reply_id) ""))))
-       (def curl-exit-code
-         (:exit curl-result))
-       ; (println curl-result)
-
-
-       (if (= curl-exit-code 0)
-         (println "Video sent")
-         (println "Video sending failed")))
-
-     (defn delete-original-message
-       "Delete original message"
-       [token id message_id]
-       (sh "curl" (str "https://api.telegram.org/bot" token "/deleteMessage?chat_id=" id "&message_id=" message_id)))
-
-     (defn send-original-text-no-preview
-       "Send original text without preview"
-       [token id text]
-       (sh "curl" (str "https://api.telegram.org/bot" token "/sendMessage?disable_web_page_preview=true&chat_id=" id "&text=" text)))
+   (fn [{{chat-id :id} :chat :as message}]
+     (def message-id (:message_id message))
 
      (defn send-video-and-edit-history
-       "Send video and if it's succesful delete original message"
+       "Send video and if it succeeds, delete original message"
        [token id message_id filename message]
-       (println "posting video...")
-       (println filename)
-       (def reply_id (:message_id (:reply_to_message message)))
-       (send-video token id filename reply_id)
-       (delete-original-message token id message_id)
-       ; Wonder what should be done with messages that contain link and some text
-       ; (send-original-text-no-preview token id text)
-       )
+       (if (tg/send-video token id filename message)
+         (tg/delete-original-message token id message_id)
+         (println "Sending video failed" filename)))
 
      (defn handle-success
        "Success, as in not nil message received"
-       [patterns text message]
-       (def should-dl (str/ends-with? text "dl"))
-       (println should-dl)
-       (def found-match (matching-url patterns text))
-       (if (or (nil? found-match) (not should-dl))
-         (println "nothing to send. no matches")
-         (send-video-and-edit-history token id message_id (download-file found-match) message)))
-
+       [text message]
+       (let [found-match (util/matching-url text POSTFIX)]
+         (and (not (nil? found-match))
+              (let [filename (util/download-file found-match target-dir)]
+                (send-video-and-edit-history token chat-id message-id filename message)))))
+       
      (defn handle-nil
-       "Fail, as in nil message received"
+       "Fail, as in nil message received, no logging though. Useful for debugging"
        []
-       (println "nil received"))
+       nil)
 
      (def text (:text message))
      (if (nil? text)
        (handle-nil)
-       (handle-success patterns text message)))))
-
+       (handle-success text message)))))
 
 (defn -main
   [& args]
-  (when (str/blank? token)
-    (println "Please provde token in TELEGRAM_TOKEN environment variable!")
+  (when (or (str/blank? token) (str/blank? target-dir))
+    (println "Please provde TELEGRAM_TOKEN and TARGET_DIR environment variables")
     (System/exit 1))
 
   (println "Starting the telegram-video-download-bot")
