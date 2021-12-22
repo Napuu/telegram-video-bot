@@ -4,7 +4,6 @@
             [environ.core :refer [env]]
             [morse.handlers :as h]
             [morse.polling :as p]
-            [morse.api :as t]
             [clojure.java.shell :refer [sh]]
             [clojure.java.io :as io])
   (:gen-class))
@@ -26,38 +25,38 @@
         #"https\:\/\/www.youtube.com/watch\?v=[a-zA-Z0-9-_]+"
         #"https\:\/\/youtu.be/[a-zA-Z0-9-_]+"))
 
-     (defn matching-urls
-       "return urls that match against the patterns"
+     (defn matching-url
+       "return url that match against any of the patterns"
        [patterns text]
-       (filter (fn [x] (not (nil? x)))
-               (flatten
-                (map
-                 (fn [pattern] [(re-seq pattern text)])
-                 patterns))))
+       (first (filter (fn [x] (not (nil? x)))
+                      (flatten (map (fn [pattern] [(re-find pattern text)])
+                                    patterns)))))
 
      (defn filename-to-full-path
        "Full path to the file"
        [filename]
        (str/join "/" [target-dir filename]))
 
-     (defn download-files
-       "Download list of files and return their locations on disk"
-       [urls]
-       (mapv (fn [url]
-               (println "youtube-dl query next")
-               (def filename (str/trim (:out (sh "youtube-dl" "-f" "bestvideo[ext=mp4]" "--get-filename" url))))
-               (println "youtube-dl query done")
-               (if (.exists (io/file filename))
-                 (println "File already exists: " filename)
-                 (sh "youtube-dl" "-f" "bestvideo[ext=mp4]" "-o" (filename-to-full-path filename) url))
-               filename)
-             urls))
+     (defn download-file
+       "Download file and return its locations on disk"
+       [url]
+
+       (println "youtube-dl query next")
+       (def filename (str/trim (:out (sh "youtube-dl" "-f" "bestvideo[ext=mp4]" "--get-filename" url))))
+       (println "youtube-dl query done")
+       (if (.exists (io/file filename))
+         (println "File already exists: " filename)
+         (sh "youtube-dl" "-f" "bestvideo[ext=mp4]" "-o" (filename-to-full-path filename) url))
+       filename)
 
      (defn send-video
        "Send video back to chat"
-       [token id filename]
+       [token id filename reply_id]
        (def curl-exit-code
-         (:exit (sh "curl" "-q" "-F" (str "video=@\"" (filename-to-full-path filename) "\"") (str "https://api.telegram.org/bot" token "/sendVideo?chat_id=" id))))
+         (:exit (sh "curl" "-q" "-F"
+                    (str "video=@\"" (filename-to-full-path filename) "\"")
+                    (str "https://api.telegram.org/bot" token "/sendVideo?chat_id=" id
+                         (if reply_id (str "&reply_to_message_id=" reply_id) "")))))
        (if (= curl-exit-code 0)
          (println "Video sent")
          (println "Video sending failed")))
@@ -72,28 +71,24 @@
        [token id text]
        (sh "curl" (str "https://api.telegram.org/bot" token "/sendMessage?disable_web_page_preview=true&chat_id=" id "&text=" text)))
 
-     (defn send-video-and-delete-message
+     (defn send-video-and-edit-history
        "Send video and if it's succesful delete original message"
-       [token id message_id filename text]
+       [token id message_id filename message]
        (println "posting video...")
-       (send-video token id filename)
+       (def reply_id (:message_id (:reply_to_message message)))
+       (send-video token id filename reply_id)
        (delete-original-message token id message_id)
-       (send-original-text-no-preview token id text))
+       ; Wonder what should be done with messages that contain link and some text
+       ; (send-original-text-no-preview token id text)
+       )
 
      (defn handle-success
        "Success, as in not nil message received"
        [patterns text message]
-       (println "received " text)
-       (def ready-files (download-files
-                         (matching-urls patterns text)))
-       (if (= "bingchilling" (:title (:chat message)))
-         (send-video-and-delete-message token id message_id (first ready-files) text)
-         (println "non bing chilling"))
-       ;(if (> (count ready-files) 8)
-       ;  (delete-original-message token id message_id)
-       ;  (println "nothing to delete")
-       ;  )
-       )
+       (def found-match (matching-url patterns text))
+       (if (nil? found-match)
+         (println "nothing to send. no matches")
+         (send-video-and-edit-history token id message_id (download-file found-match) message )))
 
      (defn handle-nil
        "Fail, as in nil message received"
@@ -103,8 +98,7 @@
      (def text (:text message))
      (if (nil? text)
        (handle-nil)
-       (handle-success patterns text message))
-     )))
+       (handle-success patterns text message)))))
 
 
 (defn -main
