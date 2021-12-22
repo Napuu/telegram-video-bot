@@ -56,11 +56,15 @@
      (defn send-video
        "Send video back to chat"
        [token id filename reply_id]
+       (def curl-result (sh "curl" "-q" "-F"
+                            (str "video=@\"" filename "\"")
+                            (str "https://api.telegram.org/bot" token "/sendVideo?chat_id=" id
+                                 (if reply_id (str "&reply_to_message_id=" reply_id) ""))))
        (def curl-exit-code
-         (:exit (sh "curl" "-q" "-F"
-                    (str "video=@\"" (filename-to-full-path filename) "\"")
-                    (str "https://api.telegram.org/bot" token "/sendVideo?chat_id=" id
-                         (if reply_id (str "&reply_to_message_id=" reply_id) "")))))
+         (:exit curl-result))
+       ; (println curl-result)
+
+
        (if (= curl-exit-code 0)
          (println "Video sent")
          (println "Video sending failed")))
@@ -79,6 +83,7 @@
        "Send video and if it's succesful delete original message"
        [token id message_id filename message]
        (println "posting video...")
+       (println filename)
        (def reply_id (:message_id (:reply_to_message message)))
        (send-video token id filename reply_id)
        (delete-original-message token id message_id)
@@ -94,7 +99,7 @@
        (def found-match (matching-url patterns text))
        (if (or (nil? found-match) (not should-dl))
          (println "nothing to send. no matches")
-         (send-video-and-edit-history token id message_id (download-file found-match) message )))
+         (send-video-and-edit-history token id message_id (download-file found-match) message)))
 
      (defn handle-nil
        "Fail, as in nil message received"
