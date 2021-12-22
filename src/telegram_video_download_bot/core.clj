@@ -47,7 +47,7 @@
        (def full-path (filename-to-full-path filename))
        (if (.exists (io/file full-path))
          (println "File already exists: " full-path)
-         (sh "youtube-dl" "-o" (filename-to-full-path full-path) url))
+         (sh "youtube-dl" "-o" full-path url))
        (if (str/ends-with? full-path ".mp4")
          (println "File is mp4")
          (println "File is not mp4"))
