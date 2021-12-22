@@ -2,6 +2,12 @@
 
 FIXME: description
 
+## notes
+```
+docker build -t telegram-bot .
+docker run -e TELEGRAM_TOKEN="__" -e TARGET_DIR=/files -v (pwd)/files:/files2 --restart=always -d telegram-bot
+```
+
 ## Installation
 
 Download from http://example.com/FIXME.
