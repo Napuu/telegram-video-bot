@@ -42,12 +42,16 @@
        [url]
 
        (println "youtube-dl query next")
-       (def filename (str/trim (:out (sh "youtube-dl" "-f" "bestvideo[ext=mp4]" "--get-filename" url))))
+       (def filename (str/trim (:out (sh "youtube-dl" "--get-filename" url))))
        (println "youtube-dl query done")
-       (if (.exists (io/file filename))
-         (println "File already exists: " filename)
-         (sh "youtube-dl" "-f" "bestvideo[ext=mp4]" "-o" (filename-to-full-path filename) url))
-       filename)
+       (def full-path (filename-to-full-path filename))
+       (if (.exists (io/file full-path))
+         (println "File already exists: " full-path)
+         (sh "youtube-dl" "-o" (filename-to-full-path full-path) url))
+       (if (str/ends-with? full-path ".mp4")
+         (println "File is mp4")
+         (println "File is not mp4"))
+       full-path)
 
      (defn send-video
        "Send video back to chat"
@@ -85,8 +89,10 @@
      (defn handle-success
        "Success, as in not nil message received"
        [patterns text message]
+       (def should-dl (str/ends-with? text "dl"))
+       (println should-dl)
        (def found-match (matching-url patterns text))
-       (if (nil? found-match)
+       (if (or (nil? found-match) (not should-dl))
          (println "nothing to send. no matches")
          (send-video-and-edit-history token id message_id (download-file found-match) message )))
 
