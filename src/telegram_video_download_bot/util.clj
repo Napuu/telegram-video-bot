@@ -20,11 +20,12 @@
   "Download file and return its locations on disk. Return false on fail."
   [url target-dir]
   (println (now) "Downloading file")
-  (let [filename (str/trim (:out (sh "./yt-dlp" "-S" "codec:h264" "--get-filename" "--merge-output-format" "mp4" url)))
+  (let [filename (str/trim (:out (sh "yt-dlp" "-S" "codec:h264" "--get-filename" "--merge-output-format" "mp4" url)))
         full-path (filename-to-full-path target-dir filename)]
-    (println url full-path)
+    ; useful for debugging, don't want to have this enabled all the time
+    ; (println url full-path)
     (and (not (.exists (io/file full-path)))
-      (sh "./yt-dlp" "-S" "codec:h264" "--merge-output-format" "mp4" "-o" full-path url))
+      (sh "yt-dlp" "-S" "codec:h264" "--merge-output-format" "mp4" "-o" full-path url))
     (if (str/ends-with? full-path ".mp4")
       full-path
       nil)))
