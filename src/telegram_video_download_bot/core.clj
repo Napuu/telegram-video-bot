@@ -31,8 +31,11 @@
        (let [found-match (util/matching-url text POSTFIX)]
          (and (not (nil? found-match))
               (let [filename (util/download-file found-match target-dir)]
-                (send-video-and-edit-history token chat-id message-id filename message)))))
-       
+                (if (nil? filename)
+                  (tg/send-response-no-match token chat-id message)
+                  (send-video-and-edit-history token chat-id message-id filename message))
+                ))))
+
      (defn handle-nil
        "Fail, as in nil message received, no logging though. Useful for debugging"
        []
@@ -50,4 +53,6 @@
     (System/exit 1))
 
   (println "Starting the telegram-video-download-bot")
+  (println "target-dir" target-dir)
+  (println "telegram-token" token)
   (<!! (p/start token handler)))

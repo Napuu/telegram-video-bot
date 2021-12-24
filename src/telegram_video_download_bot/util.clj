@@ -17,14 +17,15 @@
 (defn now [] (java.util.Date.))
 
 (defn download-file
-  "Download file and return its locations on disk"
+  "Download file and return its locations on disk. Return false on fail."
   [url target-dir]
   (println (now) "Downloading file")
-  (let [filename (str/trim (:out (sh "youtube-dl" "--get-filename" url)))
+  (let [filename (str/trim (:out (sh "./yt-dlp" "-S" "codec:h264" "--get-filename" "--merge-output-format" "mp4" url)))
         full-path (filename-to-full-path target-dir filename)]
+    (println url full-path)
     (and (not (.exists (io/file full-path)))
-      (sh "youtube-dl" "-o" full-path url))
-    (and (not (str/ends-with? full-path ".mp4"))
-      (println "File is not mp4, this might cause problems" full-path))
-    full-path))
+      (sh "./yt-dlp" "-S" "codec:h264" "--merge-output-format" "mp4" "-o" full-path url))
+    (if (str/ends-with? full-path ".mp4")
+      full-path
+      nil)))
   
