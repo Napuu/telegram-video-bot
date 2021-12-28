@@ -2,7 +2,7 @@
 
 Telegram Bot for downloading videos sent to group chats. The original message is also deleted, so chat history doesn't become cluttered.  
 
-See it in action!
+See it in action!  
 ![demo gif](demo.gif)
 
 ## Setting up
