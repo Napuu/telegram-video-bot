@@ -1,42 +1,35 @@
 # telegram-video-download-bot
 
-FIXME: description
+Telegram Bot for downloading videos sent to group chats. The original message is also deleted, so chat history doesn't become cluttered.
 
-## notes
-```
-docker build -t telegram-bot .
-docker run -e TELEGRAM_TOKEN="__" -e TARGET_DIR=/files -v (pwd)/files:/files2 --restart=always -d telegram-bot
-```
-
-## Installation
-
-Download from http://example.com/FIXME.
+![demo gif](demo.gif)
 
 ## Usage
 
-FIXME: explanation
+1. Have this bot running somewhere.
+2. Set group privacy off (bot reads only messages ending " dl")
+3. Invite bot to group you want
+4. 
 
-    $ java -jar telegram-video-download-bot-0.1.0-standalone.jar [args]
+## Running
 
-## Options
+Following environment variables are always required:
 
-FIXME: listing of options this app accepts.
+| variable | description |
+|:--|:--|
+| TELEGRAM_TOKEN | Your bot token. See [Bots: An introduction for developers](https://core.telegram.org/bots) |
+| TARGET_DIR | Directory where videos are temporarily stored. |
 
-## Examples
+### With Leiningen
 
-...
+This expects following executables to available at current PATH `curl` and `yt-dlp`.  
 
-### Bugs
+Make sure you have [Leiningen](https://leiningen.org/) installed. Then simply `lein run`.  
 
-...
+### With Docker
 
-### Any Other Sections
-### That You Think
-### Might be Useful
+```
+docker build -t telegram-video-bot .
+docker run -e TELEGRAM_TOKEN="__" -e TARGET_DIR=/tmp telegram-video-bot
+```
 
-## License
-
-Copyright © 2021 FIXME
-
-Distributed under the Eclipse Public License either version 1.0 or (at
-your option) any later version.
