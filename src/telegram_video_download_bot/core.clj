@@ -46,6 +46,24 @@
        (handle-nil)
        (handle-success text message)))))
 
+(defn start-polling
+  []
+  (<!! (p/start token handler)))
+
+; Morse library does not handle if Telegram API
+; returns 502, see https://github.com/Otann/morse/issues/44
+; To fix this, we catch all exceptions and try again after a while.
+(Thread/setDefaultUncaughtExceptionHandler
+ (reify Thread$UncaughtExceptionHandler
+   (uncaughtException [_ _ throwable]
+     (def msg (.getMessage throwable))
+     (println msg)
+     (if (= msg "clj-http: status 502")
+       (Thread/sleep 5000)
+       (Thread/sleep 60000))
+     (start-polling)
+     )))
+
 (defn -main
   [& args]
   (when (or (str/blank? token) (str/blank? target-dir))
@@ -55,4 +73,4 @@
   (println "Starting the telegram-video-download-bot")
   (println "target-dir" target-dir)
   (println "telegram-token" token)
-  (<!! (p/start token handler)))
+  (start-polling))
