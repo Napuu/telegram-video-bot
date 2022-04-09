@@ -1,0 +1,12 @@
+version: "3.9"
+services:
+  message-queue:
+    image: rabbitmq:3
+    ports:
+      - 5672:5672
+  ingester:
+    build:
+      context: .
+    environment:
+      - TELEGRAM_TOKEN
+      - TARGET_DIR=/files

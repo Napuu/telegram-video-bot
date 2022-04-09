@@ -7,7 +7,10 @@
 
   :dependencies [[org.clojure/clojure "1.8.0"]
                  [environ             "1.1.0"]
-                 [morse               "0.2.4"]]
+                 [org.clojure/data.json "2.4.0"]
+                 [morse               "0.2.4"]
+                 [org.clojure/core.match "1.0.0"]
+                 [com.novemberain/langohr "5.1.0"]]
 
   :plugins [[lein-environ "1.1.0"]]
 

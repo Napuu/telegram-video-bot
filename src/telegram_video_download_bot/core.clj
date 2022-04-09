@@ -1,76 +1,47 @@
 (ns telegram-video-download-bot.core
   (:require [clojure.core.async :refer [<!!]]
+            [clojure.core.match :refer [match]]
             [clojure.string :as str]
             [environ.core :refer [env]]
             [morse.handlers :as h]
             [morse.polling :as p]
-            [telegram-video-download-bot.util :as util]
-            [telegram-video-download-bot.telegram :as tg])
+            [telegram-video-download-bot.downloader :refer [start-downloader]]
+            [telegram-video-download-bot.ingester :refer [start-ingester]]
+            [telegram-video-download-bot.telegram :as tg]
+            [telegram-video-download-bot.util :as util])
   (:gen-class))
 
 (def token (env :telegram-token))
 (def target-dir (env :target-dir))
 (def POSTFIX " dl")
 
-(h/defhandler handler
+(defn start-message-ingester []
+  (println "starting ingester")
+  (start-ingester))
+(defn start-message-handler []
+  (println "starting handler")
+  (start-downloader))
+(defn no-match []
+  (println "no match, exiting")
+  (System/exit 1))
 
-  (h/message-fn
-   (fn [{{chat-id :id} :chat :as message}]
-     (def message-id (:message_id message))
+(defn func [args]
+  (match (vec (map keyword args))
+    [:ingester] (start-message-ingester)
+    [:handler] (start-message-handler)
+    :else (no-match)))
 
-     (defn send-video-and-edit-history
-       "Send video and if it succeeds, delete original message"
-       [token id message_id filename message]
-       (if (tg/send-video token id filename message)
-         (tg/delete-original-message token id message_id)
-         (println "Sending video failed" filename)))
+(defn -main [& args]
 
-     (defn handle-success
-       "Success, as in not nil message received"
-       [text message]
-       (let [found-match (util/matching-url text POSTFIX)]
-         (and (not (nil? found-match))
-              (let [filename (util/download-file found-match target-dir)]
-                (if (nil? filename)
-                  (tg/send-response-no-match token chat-id message)
-                  (send-video-and-edit-history token chat-id message-id filename message))
-                ))))
-
-     (defn handle-nil
-       "Fail, as in nil message received, no logging though. Useful for debugging"
-       []
-       nil)
-
-     (def text (:text message))
-     (if (nil? text)
-       (handle-nil)
-       (handle-success text message)))))
-
-(defn start-polling
-  []
-  (<!! (p/start token handler)))
-
-; Morse library does not handle if Telegram API
-; returns 502, see https://github.com/Otann/morse/issues/44
-; To fix this, we catch all exceptions and try again after a while.
-(Thread/setDefaultUncaughtExceptionHandler
- (reify Thread$UncaughtExceptionHandler
-   (uncaughtException [_ _ throwable]
-     (def msg (.getMessage throwable))
-     (println msg)
-     (if (= msg "clj-http: status 502")
-       (Thread/sleep 5000)
-       (Thread/sleep 60000))
-     (start-polling)
-     )))
-
-(defn -main
-  [& args]
+  (func args)
+  (println "haloo")
   (when (or (str/blank? token) (str/blank? target-dir))
-    (println "Please provde TELEGRAM_TOKEN and TARGET_DIR environment variables")
+    (println "Please provide TELEGRAM_TOKEN and TARGET_DIR environment variables")
     (System/exit 1))
 
   (println "Starting the telegram-video-download-bot")
   (println "target-dir" target-dir)
   (println "telegram-token" token)
-  (start-polling))
+  
+  ; (start-polling)
+  )
