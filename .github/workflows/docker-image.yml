@@ -15,4 +15,13 @@ jobs:
     steps:
     - uses: actions/checkout@v3
     - name: Build the Docker image
-      run: docker build . --file Containerfile --tag my-image-name:$(date +%s)
+      run: docker build . --file Containerfile --tag tgbot1:latest
+      
+    - name: Push To Registry
+      uses: redhat-actions/push-to-registry@v2.5.1
+      with:
+        image: tgbot1
+        tags: latest
+        registry: ${{ secrets.REGISTRY_HOSTNAME }}
+        username: ${{ secrets.REGISTRY_USERNAME }}
+        password: ${{ secrets.REGISTRY_PASSWORD }}
