@@ -8,12 +8,11 @@
             [telegram-video-download-bot.telegram :refer [send-response-no-match]]
             [telegram-video-download-bot.util :refer [contains-blacklisted-word? matching-url]]))
 
-(def POSTFIX " dl")
 (def conn (get-rmq-connection))
 (h/defhandler handler
   (h/message-fn
    (fn [message]
-     (let [link (matching-url (:text message) POSTFIX)
+     (let [link (matching-url (:text message) (get-config-value :postfix))
            contains-blacklisted-word (and link (contains-blacklisted-word? link (get-config-value :blacklist)))
            chat-id (:id (:chat message))
            message-id (:message_id message)
@@ -34,7 +33,7 @@
 ; Morse library does not handle situations well if Telegram API
 ; returns 502, see https://github.com/Otann/morse/issues/44
 ; To fix this, we catch all exceptions and try again after a while.
-
+; note - might be fixed right now, so it's commented out
 (comment (Thread/setDefaultUncaughtExceptionHandler
  (reify Thread$UncaughtExceptionHandler
    (uncaughtException [_ _ throwable]

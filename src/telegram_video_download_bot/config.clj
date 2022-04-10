@@ -8,6 +8,8 @@
 (def config-map (merge
                  ; defaults
                  {:target-dir "/tmp"
+                  :blacklist []
+                  :postfix " dl"
                   :base-error-message "Hyvä linkki......"}
                  ; if config file exists, load it and override defaults
                  (when (.exists (io/as-file filepath))
