@@ -8,8 +8,9 @@
             [telegram-video-download-bot.telegram :refer [send-response-no-match]]
             [telegram-video-download-bot.util :refer [contains-blacklisted-word? matching-url]]))
 
-(def conn (get-rmq-connection))
+
 (h/defhandler handler
+  (def conn (get-rmq-connection))
   (h/message-fn
    (fn [message]
      (let [link (matching-url (:text message) (get-config-value :postfix))
