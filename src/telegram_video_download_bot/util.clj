@@ -3,9 +3,7 @@
             [clojure.java.io :as io]
             [clojure.java.shell :refer [sh]]
             [clojure.pprint :as pprint]
-            [clojure.string :as str]
-            [taoensso.carmine :as car :refer (wcar)]
-            [taoensso.carmine.message-queue :as car-mq]))
+            [clojure.string :as str]))
 
 (defn filename-to-full-path
   "Full path to the file"
