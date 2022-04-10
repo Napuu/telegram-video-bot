@@ -1,5 +1,6 @@
 (ns telegram-video-download-bot.downloader
   (:require [clojure.data.json :as json]
+            [clojure.tools.logging :as log]
             [langohr.consumers :as lc]
             [telegram-video-download-bot.config :refer [get-config-value]]
             [telegram-video-download-bot.mq :refer [get-rmq-connection]]
@@ -7,19 +8,9 @@
                                                           send-response-no-match send-video]]
             [telegram-video-download-bot.util :refer [download-file]]))
 
-; TODO - move this to core.clj
-(def LINK_QUEUE "video-download-bot.link-queue")
-
-(defn parse-link-from-queue
-  "Parses link that was received from
-     message queue"
-  [{:keys [link chat-id reply-to-id]}]
-  (when (not link)
-    (println "No 'link' provided"))
-  (println "Hello from handler" link chat-id reply-to-id))
-
 (defn message-handler
   [_ _  ^bytes payload]
+  (log/info "Received message")
   (let [parsed (json/read-str (String. payload "UTF-8"))
         token (get-config-value :token)
         link (get parsed "link")
@@ -29,14 +20,15 @@
         reply-to-id (get parsed "reply-to-id" nil)
         file-location (download-file link "/tmp")]
     (if (nil? file-location)
-      (send-response-no-match token chat-id message-id)
-      (if (send-video token chat-id file-location reply-to-id)
-        ((println "File sent successfully")
-         (delete-original-message token chat-id message-id))
-        (println "Something went wrong while trying to send file")))))
-
+      (send-response-no-match token chat-id message-id (get-config-value :base-error-message))
+      (let [error-code (send-video token chat-id file-location reply-to-id)]
+        (if (not error-code)
+          (do (log/info "File sent succesfully")
+              (delete-original-message token chat-id message-id))
+          (do
+            (log/error "Something went wrong while trying to send file")
+            (send-response-no-match token chat-id message-id (str (get-config-value :base-error-message) "(" error-code ")"))))))))
 
 (defn start-downloader []
   (let [{:keys [:ch :qname]} (get-rmq-connection)]
-    (println "ch, qname:" ch qname)
     (lc/subscribe ch qname message-handler {:auto-ack true})))

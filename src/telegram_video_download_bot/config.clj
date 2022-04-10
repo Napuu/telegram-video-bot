@@ -4,9 +4,11 @@
             [environ.core :refer [env]]))
 
 (def filepath (or (env :config-file) "config.edn"))
+
 (def config-map (merge
                  ; defaults
-                 {:target-dir "/tmp"}
+                 {:target-dir "/tmp"
+                  :base-error-message "Hyvä linkki......"}
                  ; if config file exists, load it and override defaults
                  (when (.exists (io/as-file filepath))
                    (edn/read-string (slurp filepath)))))

@@ -3,12 +3,13 @@
             [morse.handlers :as h]
             [morse.polling :as p]
             [telegram-video-download-bot.config :refer [get-config-value]]
-            [telegram-video-download-bot.mq :refer [enqueue-link]]
+            [telegram-video-download-bot.mq :refer [enqueue-link
+                                                    get-rmq-connection]]
             [telegram-video-download-bot.telegram :refer [send-response-no-match]]
             [telegram-video-download-bot.util :refer [contains-blacklisted-word? matching-url]]))
 
 (def POSTFIX " dl")
-
+(def conn (get-rmq-connection))
 (h/defhandler handler
   (h/message-fn
    (fn [message]
@@ -20,11 +21,12 @@
        (when link
          (if (not contains-blacklisted-word)
            (enqueue-link
+            :conn conn
             :link link
             :chat-id chat-id
             :message-id message-id
             :reply-to-id reply-to-id)
-           (send-response-no-match (get-config-value :token) chat-id message-id)))))))
+           (send-response-no-match (get-config-value :token) chat-id message-id (get-config-value :base-error-message))))))))
 
 (defn start-ingester []
   (<!! (p/start (get-config-value :token) handler)))
