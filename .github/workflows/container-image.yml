@@ -1,4 +1,4 @@
-name: Docker Image CI
+name: Container Image CI
 
 on:
   push:
@@ -14,9 +14,9 @@ jobs:
 
     steps:
     - uses: actions/checkout@v3
-    - name: Build the Docker image
-      run: docker build . --file Containerfile --tag tgbot1:latest
-      
+    - name: Build the Container image
+      run: podman build . --file Containerfile --tag tgbot1:latest
+
     - name: Push To Registry
       uses: redhat-actions/push-to-registry@v2.5.1
       with:
@@ -24,4 +24,4 @@ jobs:
         tags: latest
         registry: ${{ secrets.REGISTRY_HOSTNAME }}
         username: ${{ secrets.REGISTRY_USERNAME }}
-        password: ${{ secrets.REGISTRY_PASSWORD }}
+        password: ${{ secrets.REGISTRY_PASSWORD }}

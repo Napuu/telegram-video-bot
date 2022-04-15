@@ -14,23 +14,16 @@ See it in action!
 
 ## Running
 
-Following environment variables are always required:
-
-| variable | description |
-|:--|:--|
-| TELEGRAM_TOKEN | Your bot token. See [Bots: An introduction for developers](https://core.telegram.org/bots) |
-| TARGET_DIR | Directory where videos are temporarily stored. |
-
+Put correct token in `config.edn`.
 ### With Leiningen
 
-This expects following executables to available at current PATH `curl` and `yt-dlp`.  
+This expects following executables to be available at current PATH `curl` and `yt-dlp`.  
 
-Make sure you have [Leiningen](https://leiningen.org/) installed. Then simply `lein run`.  
+Run `podman-compose up message-queue` to start message queue, then simply `lein run`. [Leiningen](https://leiningen.org/) needed.
 
-### With Docker
+### With Podman
 
 ```
-docker build -t telegram-video-bot .
-docker run -e TELEGRAM_TOKEN="__" -e TARGET_DIR=/tmp telegram-video-bot
+podman-compose up
 ```
 
