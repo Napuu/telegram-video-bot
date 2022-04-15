@@ -30,5 +30,5 @@
             (send-response-no-match token chat-id message-id (str (get-config-value :base-error-message) "(" error-code ")"))))))))
 
 (defn start-downloader []
-  (let [{:keys [:ch :qname]} @global-mq-connection]
+  (let [{:keys [:ch :qname]} @@global-mq-connection]
     (lc/subscribe ch qname message-handler {:auto-ack true})))

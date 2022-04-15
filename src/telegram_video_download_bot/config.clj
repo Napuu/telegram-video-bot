@@ -11,7 +11,7 @@
                   :blacklist []
                   :postfix " dl"
                   :mq-host "localhost"
-                  :mq-port "5672"
+                  :mq-port 5672
                   :base-error-message "Hyvä linkki......"}
                  ; if config file exists, load it and override defaults
                  (when (.exists (io/as-file filepath))
