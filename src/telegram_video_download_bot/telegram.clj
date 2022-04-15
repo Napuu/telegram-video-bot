@@ -5,12 +5,11 @@
 
 (defn send-video
   "Send video back to chat. Return error code if something went wrong."
-  [token id filename message]
-  (let [reply_id (:message_id (:reply_to_message message))
-        sent_message (sh "curl" "-q" "-F"
+  [token id filename reply-id]
+  (let [sent_message (sh "curl" "-q" "-F"
                          (str "video=@\"" filename "\"")
                          (str "https://api.telegram.org/bot" token "/sendVideo?chat_id=" id
-                              (if reply_id (str "&reply_to_message_id=" reply_id) "")))
+                              (when reply-id (str "&reply_to_message_id=" reply-id))))
         send_message_parsed (json/read-str (sent_message :out))
         sent_message_ok? (get send_message_parsed "ok")]
     (if (not sent_message_ok?)
