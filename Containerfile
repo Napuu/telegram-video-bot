@@ -14,4 +14,7 @@ RUN chmod a+rx /usr/local/bin/yt-dlp
 RUN apt-get update && apt-get install curl python3 -y
 WORKDIR /app
 COPY --from=clojure-build /tmp/out.jar .
+
+LABEL com.centurylinklabs.watchtower.enable="true"
+
 CMD java -jar out.jar
