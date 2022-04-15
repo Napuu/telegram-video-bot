@@ -11,19 +11,22 @@
 (h/defhandler handler
   (h/message-fn
    (fn [message]
-     (let [link (matching-url (:text message) (get-config-value :postfix))
-           contains-blacklisted-word (and link (contains-blacklisted-word? link (get-config-value :blacklist)))
-           chat-id (:id (:chat message))
-           message-id (:message_id message)
-           reply-to-id (:message_id (:reply_to_message message))]
-       (when link
-         (if (not contains-blacklisted-word)
-           (enqueue-link
-            :link link
-            :chat-id chat-id
-            :message-id message-id
-            :reply-to-id reply-to-id)
-           (send-response-no-match (get-config-value :token) chat-id message-id (get-config-value :base-error-message))))))))
+     (when (not (nil? (:text message)))
+
+       (let [link (matching-url (:text message) (get-config-value :postfix))
+             contains-blacklisted-word (and link (contains-blacklisted-word? link (get-config-value :blacklist)))
+             chat-id (:id (:chat message))
+             message-id (:message_id message)
+             reply-to-id (:message_id (:reply_to_message message))]
+
+         (when link
+           (if (not contains-blacklisted-word)
+             (enqueue-link
+              :link link
+              :chat-id chat-id
+              :message-id message-id
+              :reply-to-id reply-to-id)
+             (send-response-no-match (get-config-value :token) chat-id message-id (get-config-value :base-error-message)))))))))
 
 (defn start-ingester []
   (<!! (p/start (get-config-value :token) handler)))
