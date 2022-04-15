@@ -15,11 +15,13 @@ See it in action!
 ## Running
 
 Put correct token in `config.edn`.
-### With Leiningen
+### With [Leiningen](https://leiningen.org/) 
 
 This expects following executables to be available at current PATH `curl` and `yt-dlp`.  
 
-Run `podman-compose up message-queue` to start message queue, then simply `lein run`. [Leiningen](https://leiningen.org/) needed.
+Run `podman-compose up message-queue` to start message queue, then   
+`lein run ingester` - reads messages from Telegram api and send them to the message queue if they end with configured postfix.  
+`lein run handler` - reads messages from the message queue, downloads videos and posts them to the group.
 
 ### With Podman
 

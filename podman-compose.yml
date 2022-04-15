@@ -1,12 +1,20 @@
-version: "3.9"
+version: "3.2"
 services:
   message-queue:
     image: rabbitmq:3
-    ports:
-      - 5672:5672
   ingester:
     build:
       context: .
-    environment:
-      - TELEGRAM_TOKEN
-      - TARGET_DIR=/files
+    depends_on:
+      - message-queue
+    volumes:
+      - $PWD/config.edn:/app/config.edn
+    command: java -jar out.jar ingester
+  handler:
+    build:
+      context: .
+    depends_on:
+      - message-queue
+    volumes:
+      - $PWD/config.edn:/app/config.edn
+    command: java -jar out.jar handler
