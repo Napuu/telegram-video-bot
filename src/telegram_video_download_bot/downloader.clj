@@ -31,4 +31,5 @@
 
 (defn start-downloader []
   (let [{:keys [:ch :qname]} @@global-mq-connection]
-    (lc/subscribe ch qname message-handler {:auto-ack true})))
+    (lc/subscribe ch qname message-handler {:auto-ack true})
+    (log/info "Downloader up and running")))

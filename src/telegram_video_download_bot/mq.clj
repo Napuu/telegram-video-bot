@@ -11,13 +11,19 @@
   default-exchange-name "")
 
 (defn get-mq-connection
-  "init rmq connection, return [ch qname]" []
-  (let [conn  (rmq/connect {:host (get-config-value :mq-host)
-                            :port (get-config-value :mq-port)})
-        ch    (lch/open conn)
-        qname "video-download-bot.link-queue"]
-    (lq/declare ch qname {:exclusive false :auto-delete true})
-    {:ch ch :qname qname :conn conn}))
+  "Init rmq connection, return [ch qname]" []
+  (log/info "Trying to acquire MQ connection")
+  (try (let [conn  (rmq/connect {:host (get-config-value :mq-host)
+                                 :port (get-config-value :mq-port)})
+             ch    (lch/open conn)
+             qname "video-download-bot.link-queue"]
+         (lq/declare ch qname {:exclusive false :auto-delete true})
+         (log/info "MQ connection acquired")
+         {:ch ch :qname qname})
+       (catch Exception _
+         (log/warn "Could not connect to the message queue. Waiting for a while before trying again...")
+         (Thread/sleep 5000)
+         (get-mq-connection))))
 
 (def global-mq-connection (atom (delay (get-mq-connection))))
 
