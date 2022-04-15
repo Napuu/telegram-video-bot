@@ -4,32 +4,49 @@
             [langohr.basic :as lb]
             [langohr.channel :as lch]
             [langohr.core :as rmq]
-            [langohr.queue :as lq]))
+            [langohr.queue :as lq]
+            [telegram-video-download-bot.config :refer [get-config-value]]))
 
 (def ^{:const true}
   default-exchange-name "")
 
-
-(defn get-rmq-connection
+(defn get-mq-connection
   "init rmq connection, return [ch qname]" []
-  (let [_conn  (rmq/connect)
-        _ch    (lch/open _conn)
-        _qname "video-download-bot.link-queue"]
-    (lq/declare _ch _qname {:exclusive false :auto-delete true})
-    {:ch _ch :qname _qname :conn _conn}))
+  (let [conn  (rmq/connect {:host (get-config-value :mq-host)
+                            :port (get-config-value :mq-port)})
+        ch    (lch/open conn)
+        qname "video-download-bot.link-queue"]
+    (lq/declare ch qname {:exclusive false :auto-delete true})
+    {:ch ch :qname qname :conn conn}))
+
+(def global-mq-connection (atom (delay (get-mq-connection))))
+
+(defn _enqueue-link
+  [& {:keys [link chat-id message-id reply-to-id connection]}]
+  (log/info "Sending message to queue")
+  (let [{:keys [ch qname]} connection]
+    (lb/publish ch default-exchange-name qname
+                (json/write-str {:link link :chat-id chat-id :message-id message-id :reply-to-id reply-to-id})
+                {:content-type "text/plain" :type "telegram.link"})))
 
 (defn enqueue-link
-  "Send link to message queue
+  "Send link to message queue - retries on failure
      link - link to the actual video
      chat-id - Telegram's chat id
      reply-to-id - if exists, video was sent as a reply"
-  [& {:keys [link chat-id message-id reply-to-id]}]
-  (log/info "Sending message to queue")
-  ; Fairly sure that getting the connection every time this way is very bad,
-  ; but with this amount of users it's not a big deal.
-  (let [{:keys [ch qname conn]} (get-rmq-connection)]
-    (lb/publish ch default-exchange-name qname
-                (json/write-str {:link link :chat-id chat-id :message-id message-id :reply-to-id reply-to-id})
-                {:content-type "text/plain" :type "telegram.link"})
-    (rmq/close ch)
-    (rmq/close conn)))
+  [& {:keys [link chat-id message-id reply-to-id retries]}]
+  (let [connection @global-mq-connection
+        retries (or retries 0)]
+    (if (< retries 10)
+      (try
+        (_enqueue-link :connection @connection :link link :chat-id chat-id :message-id message-id :reply-to-id reply-to-id)
+        (catch Exception _
+          (log/error "Mq connection is not ok, retrying...")
+          (Thread/sleep 2000)
+          (enqueue-link
+           :retries (inc retries)
+           :link link
+           :chat-id chat-id
+           :message-id message-id
+           :reply-to-id reply-to-id)))
+      (log/warn "Too many retries, giving up..."))))

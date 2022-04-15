@@ -3,7 +3,7 @@
             [clojure.tools.logging :as log]
             [langohr.consumers :as lc]
             [telegram-video-download-bot.config :refer [get-config-value]]
-            [telegram-video-download-bot.mq :refer [get-rmq-connection]]
+            [telegram-video-download-bot.mq :refer [get-mq-connection]]
             [telegram-video-download-bot.telegram :refer [delete-original-message send-chat-action
                                                           send-response-no-match send-video]]
             [telegram-video-download-bot.util :refer [download-file]]))
@@ -30,5 +30,5 @@
             (send-response-no-match token chat-id message-id (str (get-config-value :base-error-message) "(" error-code ")"))))))))
 
 (defn start-downloader []
-  (let [{:keys [:ch :qname]} (get-rmq-connection)]
+  (let [{:keys [:ch :qname]} (get-mq-connection)]
     (lc/subscribe ch qname message-handler {:auto-ack true})))
