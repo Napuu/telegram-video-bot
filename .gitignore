@@ -12,3 +12,4 @@ pom.xml.asc
 .clj-kondo
 .DS_Store
 .lsp
+config.edn
