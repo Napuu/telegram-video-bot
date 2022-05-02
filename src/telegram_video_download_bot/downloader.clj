@@ -23,7 +23,7 @@
       (send-response-no-match token chat-id message-id (get-config-value :base-error-message))
       (let [error-code (send-video token chat-id file-location reply-to-id)]
         (if (not error-code)
-          (do (log/info "File sent succesfully")
+          (do (log/info "File sent successfully")
               (delete-original-message token chat-id message-id))
           (do
             (log/error "Something went wrong while trying to send file")

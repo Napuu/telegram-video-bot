@@ -12,8 +12,9 @@
                  [org.clojure/tools.logging "1.2.4"]
                  [org.slf4j/slf4j-api "1.7.32"]
                  [org.slf4j/slf4j-log4j12 "1.7.32"]
-                 [commons-logging/commons-logging 1.2]
                  [org.clojure/core.match "1.0.0"]
+                 [clj-http "3.12.3"]
+                 [cheshire "5.9.0"]
                  [com.novemberain/langohr "5.1.0"]]
 
   :plugins [[lein-environ "1.1.0"]]
