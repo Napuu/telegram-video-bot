@@ -1,44 +1,58 @@
 (ns telegram-video-download-bot.telegram
-  (:require [clojure.data.json :as json]
-            [clojure.java.shell :refer [sh]]
+  (:require [telegram-video-download-bot.config :refer [get-config-value]]
+            [clj-http.client :as client]
             [clojure.tools.logging :as log]))
 
-(defn send-video
-  "Send video back to chat. Return error code if something went wrong."
-  [token id filename reply-id]
-  (let [sent_message (sh "curl" "-q" "-F"
-                         (str "video=@\"" filename "\"")
-                         (str "https://api.telegram.org/bot" token "/sendVideo?chat_id=" id
-                              (when reply-id (str "&reply_to_message_id=" reply-id))))
-        send_message_parsed (json/read-str (sent_message :out))
-        sent_message_ok? (get send_message_parsed "ok")]
-    (if (not sent_message_ok?)
-      (get send_message_parsed "error_code")
-      nil)))
+(defn send-telegram-command
+  "Send command to Telegram api. Takes dict as a parameter.
+  {:bot-token   <bots secret token>
+   :chat-id     <chat id>
+   :method      <telegram api method> https://core.telegram.org/bots/api#available-methods
+   :action      <chat action> https://core.telegram.org/bots/api#sendchataction
+   :text        <text content of the message>
+   :reply-to-id <id of the message to reply>
+   :file        <path of the file to send>}"
+  [command]
 
-(defn send-chat-action
-  [token id action]
-  (let [send-success (= (:exit
-                         (sh "curl" "-q"
-                             (str "https://api.telegram.org/bot" token "/sendChatAction?"
-                                  "chat_id=" id
-                                  "&action=" action))) 0)]
-    (when (not send-success) (log/error "Sending chat action failed"))
-    send-success))
+  (let [{bot-token :bot-token chat-id :chat-id method :method} command]
+    (if (every? identity [bot-token chat-id method])
+      (let [{action      :action
+             text        :text
+             reply-to-id :reply-to-id
+             message-id  :deleted-message-id
+             file        :file} command
+            url (str (get-config-value :telegram-api-endpoint) bot-token "/" method)
+            query-params {:chat_id             chat-id
+                          :action              action
+                          :text                text
+                          :message-id          message-id
+                          :reply_to_message_id reply-to-id}
+            response (client/post url {:query-params     query-params
+                                       :throw-exceptions false
+                                       :multipart        (when file [{:name    "video"
+                                                                      :content (clojure.java.io/file file)}])})
+            status (:status response)]
+        (when (not (= status 200)) status))
+      (log/error "At least :bot-token, :chat-id and :method must be provided."))))
 
-(defn send-response-no-match
-  "Send message about no matches back to chat. Return true on success, false otherwise"
-  [token id reply-to-id text]
-  (let [send-success (= (:exit
-                         (sh "curl" "-q"
-                             (str "https://api.telegram.org/bot" token "/sendMessage?"
-                                  "chat_id=" id
-                                  "&text=" text
-                                  "&reply_to_message_id=" reply-to-id))) 0)]
-    (log/error "File not sent")
-    send-success))
-
-(defn delete-original-message
-  "Delete original message"
-  [token id message_id]
-  (sh "curl" (str "https://api.telegram.org/bot" token "/deleteMessage?chat_id=" id "&message_id=" message_id)))
+(comment
+  ; "5146505461:AAF3vkhitoyamx_EIwNlV9zGx_pZaAeHW_4" -1001764073348 "upload_video"
+  (send-telegram-command {:bot-token "5146505461:AAF3vkhitoyamx_EIwNlV9zGx_pZaAeHW_4"
+                          :method    "sendMessage"
+                          :chat-id   -10013764073348
+                          :text      "asdf"})
+  (send-telegram-command {:bot-token "5146505461:AAF3vkhitoyamx_EIwNlV9zGx_pZaAeHW_4"
+                          :method    "sendMessage"
+                          :chat-id   -10013764073348
+                          :text      "asdf"})
+  (send-telegram-command {:bot-token "5146505461:asdf"
+                          :method    "sendMessage"
+                          :text      "asdf"})
+  (if-let [kissa 1]
+    (println "asdf")
+    (println "not"))
+  (send-telegram-command {:bot-token "5146505461:AAF3vkhitoyamx_EIwNlV9zGx_pZaAeHW_4"
+                          :method    "sendVideo"
+                          :chat-id   -1001764073348
+                          :file      "/tmp/kissa.mp4"})
+  )

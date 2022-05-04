@@ -9,15 +9,19 @@
                  [environ             "1.1.0"]
                  [org.clojure/data.json "2.4.0"]
                  [morse               "0.2.4"]
+                 [ring "1.9.5"]
                  [org.clojure/tools.logging "1.2.4"]
                  [org.slf4j/slf4j-api "1.7.32"]
                  [org.slf4j/slf4j-log4j12 "1.7.32"]
                  [org.clojure/core.match "1.0.0"]
                  [clj-http "3.12.3"]
                  [cheshire "5.9.0"]
+                 [ring/ring-json "0.5.1"]
                  [com.novemberain/langohr "5.1.0"]]
 
-  :plugins [[lein-environ "1.1.0"]]
+  :plugins [[lein-environ "1.1.0"]
+            [lein-ring "0.12.5"]]
+  :ring {:handler telegram-video-download-bot.ingester/app}
 
   :main ^:skip-aot telegram-video-download-bot.core
   :target-path "target/%s"

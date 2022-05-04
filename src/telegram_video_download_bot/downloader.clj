@@ -4,8 +4,7 @@
             [langohr.consumers :as lc]
             [telegram-video-download-bot.config :refer [get-config-value]]
             [telegram-video-download-bot.mq :refer [global-mq-connection]]
-            [telegram-video-download-bot.telegram :refer [delete-original-message send-chat-action
-                                                          send-response-no-match send-video]]
+            [telegram-video-download-bot.telegram :refer [send-telegram-command]]
             [telegram-video-download-bot.util :refer [download-file]]))
 
 (defn message-handler
@@ -15,19 +14,34 @@
         token (get-config-value :token)
         link (get parsed "link")
         chat-id (get parsed "chat-id")
-        _ (send-chat-action token chat-id "upload_video")
+        _ (send-telegram-command {:bot-token token :chat-id chat-id :method "sendChatAction" :action "upload_video" })
         message-id (get parsed "message-id")
         reply-to-id (get parsed "reply-to-id" nil)
         file-location (download-file link "/tmp")]
     (if (nil? file-location)
-      (send-response-no-match token chat-id message-id (get-config-value :base-error-message))
-      (let [error-code (send-video token chat-id file-location reply-to-id)]
+      (send-telegram-command {:bot-token token
+                              :chat-id chat-id
+                              :method "sendMessage"
+                              :reply-to-id message-id
+                              :text (get-config-value :base-error-message)})
+      (let [error-code (send-telegram-command {:bot-token token
+                                               :chat-id chat-id
+                                               :method "sendVideo"
+                                               :reply-to-id reply-to-id
+                                               :file file-location})]
         (if (not error-code)
           (do (log/info "File sent successfully")
-              (delete-original-message token chat-id message-id))
+              (send-telegram-command {:bot-token token
+                                      :chat-id chat-id
+                                      :method "deleteMessage"
+                                      :deleted-message-id message-id}))
           (do
             (log/error "Something went wrong while trying to send file")
-            (send-response-no-match token chat-id message-id (str (get-config-value :base-error-message) "(" error-code ")"))))))))
+            (send-telegram-command {:bot-token token
+                                    :chat-id chat-id
+                                    :method "sendMessage"
+                                    :reply-to-id reply-to-id
+                                    :text (str (get-config-value :base-error-message) "(" error-code ")")})))))))
 
 (defn start-downloader []
   (let [{:keys [:ch :qname]} @@global-mq-connection]
