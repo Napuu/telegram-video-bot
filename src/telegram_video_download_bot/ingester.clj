@@ -17,14 +17,14 @@
       (when link
         (if (not contains-blacklisted-word)
           (enqueue-link
-           :link link
-           :chat-id chat-id
-           :message-id message-id
-           :reply-to-id reply-to-id)
-          (send-telegram-command {:bot-token (get-config-value :token) :chat-id chat-id
-                                  :method "sendMessage"
+            :link link
+            :chat-id chat-id
+            :message-id message-id
+            :reply-to-id reply-to-id)
+          (send-telegram-command {:bot-token   (get-config-value :token) :chat-id chat-id
+                                  :method      "sendMessage"
                                   :reply-to-id message-id
-                                  :text (get-config-value :base-error-message)}))))))
+                                  :text        (get-config-value :base-error-message)}))))))
 (defn handler [request]
   (ingest-telegram-message (:message (:body request)))
   (response "OK"))

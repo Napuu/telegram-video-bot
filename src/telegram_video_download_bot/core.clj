@@ -4,15 +4,17 @@
             [clojure.tools.logging :as log]
             [telegram-video-download-bot.config :refer [get-config-value]]
             [telegram-video-download-bot.downloader :refer [start-downloader]]
-            [telegram-video-download-bot.ingester :refer [start-ingester]])
+            [telegram-video-download-bot.ingester :refer [start-server]])
   (:gen-class))
 
 (defn start-message-ingester []
   (log/info "Starting ingester")
-  (start-ingester))
+  (start-server))
+
 (defn start-message-handler []
   (log/info "Starting handler")
   (start-downloader))
+
 (defn no-match []
   (println "No match, exiting")
   (System/exit 1))
