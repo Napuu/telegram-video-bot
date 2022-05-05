@@ -5,6 +5,7 @@
 
 (defn send-telegram-command
   "Send command to Telegram api. Takes dict as a parameter.
+  Return status code.
   {:bot-token   <bots secret token>
    :chat-id     <chat id>
    :method      <telegram api method> https://core.telegram.org/bots/api#available-methods
@@ -30,9 +31,8 @@
             response (client/post url {:query-params     query-params
                                        :throw-exceptions false
                                        :multipart        (when file [{:name    "video"
-                                                                      :content (clojure.java.io/file file)}])})
-            status (:status response)]
-        (when (not (= status 200)) status))
+                                                                      :content (clojure.java.io/file file)}])})]
+        (:status response))
       (log/error "At least :bot-token, :chat-id and :method must be provided."))))
 
 (comment

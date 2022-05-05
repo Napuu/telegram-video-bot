@@ -24,12 +24,12 @@
                               :method "sendMessage"
                               :reply-to-id message-id
                               :text (get-config-value :base-error-message)})
-      (let [error-code (send-telegram-command {:bot-token token
+      (let [status-code (send-telegram-command {:bot-token token
                                                :chat-id chat-id
                                                :method "sendVideo"
                                                :reply-to-id reply-to-id
                                                :file file-location})]
-        (if (not error-code)
+        (if (= status-code 200)
           (do (log/info "File sent successfully")
               (send-telegram-command {:bot-token token
                                       :chat-id chat-id
@@ -41,7 +41,7 @@
                                     :chat-id chat-id
                                     :method "sendMessage"
                                     :reply-to-id reply-to-id
-                                    :text (str (get-config-value :base-error-message) "(" error-code ")")})))))))
+                                    :text (str (get-config-value :base-error-message) "(" status-code ")")})))))))
 
 (defn start-downloader []
   (let [{:keys [:ch :qname]} @@global-mq-connection]
