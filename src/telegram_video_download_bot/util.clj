@@ -1,7 +1,8 @@
 (ns telegram-video-download-bot.util
   (:require [clojure.java.shell :refer [sh]]
             [clojure.string :as str]
-            [clojure.tools.logging :as log]))
+            [clojure.tools.logging :as log]
+            [telegram-video-download-bot.config :refer [get-config-value]]))
 
 (defn filename-to-full-path
   "Full path to the file"
@@ -21,8 +22,10 @@
 
 (defn contains-blacklisted-word?
   "Return true if message contains blacklisted word, nil otherwise"
-  [message blacklisted-words]
-  (some (fn [word] (str/includes? message word)) blacklisted-words))
+  [message]
+  (let [blacklisted-words (get-config-value :blacklist)]
+    (and (> 0 (count blacklisted-words))
+         (some (fn [word] (str/includes? message word)) blacklisted-words))))
 
 (defn download-file
   "Download file and return its locations on disk. Return false on fail."

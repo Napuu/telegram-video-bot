@@ -10,7 +10,7 @@
 (defn ingest-telegram-message [message]
   (when (not (nil? (:text message)))
     (let [link (matching-url (:text message) (get-config-value :postfix))
-          contains-blacklisted-word (and link (contains-blacklisted-word? link (get-config-value :blacklist)))
+          contains-blacklisted-word (and link (contains-blacklisted-word? link))
           chat-id (:id (:chat message))
           message-id (:message_id message)
           reply-to-id (:message_id (:reply_to_message message))]

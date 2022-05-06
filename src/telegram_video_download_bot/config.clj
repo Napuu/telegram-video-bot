@@ -2,12 +2,12 @@
   (:require [environ.core :refer [env]]
             [clojure.string :as str]))
 
-(def config-map {:bot-token             (env :bot-token)
+(def config-map {:token                 (env :token)
                  :target-dir            (or (env :target-dir) "/tmp")
-                 :blacklist             (or (str/split (env :blacklist) #";") [])
+                 :blacklist             (str/split (or (env :blacklist) "") #";")
                  :postfix               (or (env :postfix) " dl")
                  :mq-host               (or (env :mq-host) "localhost")
-                 :mq-port               (or (Integer/parseInt (env :mq-port)) 5672)
+                 :mq-port               (Integer/parseInt (or (env :mq-port) "5672"))
                  :base-error-message    (or (env :base-error-message) "Hyvä linkki......")
                  :telegram-api-endpoint (or (env :telegram-api-endpoint) "https://api.telegram.org/bot")})
 
