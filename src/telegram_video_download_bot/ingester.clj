@@ -33,4 +33,4 @@
       (response "OK")) {:keywords? true}))
 
 (defn start-server [& _]
-  (run-jetty app {:port (Integer/parseInt (or (System/getenv "port") "3020"))}))
+  (run-jetty app {:port (Integer/parseInt (or (System/getenv "port") "3000"))}))
