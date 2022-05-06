@@ -1,6 +1,5 @@
 (ns telegram-video-download-bot.util
-  (:require [clojure.java.io :as io]
-            [clojure.java.shell :refer [sh]]
+  (:require [clojure.java.shell :refer [sh]]
             [clojure.string :as str]
             [clojure.tools.logging :as log]))
 
@@ -31,10 +30,10 @@
   (log/info "Downloading file")
   (let [filename (str/trim (:out (sh "yt-dlp" "-S" "codec:h264" "--get-filename" "--merge-output-format" "mp4" url)))
         full-path (filename-to-full-path target-dir filename)]
-    ;; useful for debugging, don't want to have this enabled all the time
-    ;; (log/debug url full-path)
-    (and (not (.exists (io/file full-path)))
-         (sh "yt-dlp" "-S" "codec:h264" "--merge-output-format" "mp4" "-o" full-path url))
-    (if (str/ends-with? full-path ".mp4")
+    (sh "yt-dlp" "-S" "codec:h264" "--merge-output-format" "mp4" "-o" full-path url)
+    (if (str/ends-with? filename ".mp4")
+      ;; if filename ends with ".mp4", no additional conversion is needed
       full-path
-      nil)))
+      ;; if not, run it through ffmpeg
+      (do (sh "ffmpeg" "-i" full-path (str full-path ".mp4"))
+          (str full-path ".mp4")))))
