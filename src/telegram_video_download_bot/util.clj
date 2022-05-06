@@ -41,7 +41,7 @@
       ;; if not, it is one of two scenarios,
       ;; 1. no file was found
       ;; 2. only webm or some other non-mp4 format was available
-      (when (and (true? filename)
+      (when (and (not (str/blank? filename))
                  (.exists (io/as-file full-path)))
         (do (sh "ffmpeg" "-i" full-path (str full-path ".mp4"))
             (str full-path ".mp4"))))))
