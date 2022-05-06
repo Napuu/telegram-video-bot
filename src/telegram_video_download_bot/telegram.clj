@@ -12,6 +12,7 @@
    :action      <chat action> https://core.telegram.org/bots/api#sendchataction
    :text        <text content of the message>
    :reply-to-id <id of the message to reply>
+   :message-id  <id of the message to delete>
    :file        <path of the file to send>}"
   [command]
 
@@ -20,13 +21,13 @@
       (let [{action      :action
              text        :text
              reply-to-id :reply-to-id
-             message-id  :deleted-message-id
+             message-id  :message-id
              file        :file} command
             url (str (get-config-value :telegram-api-endpoint) bot-token "/" method)
             query-params {:chat_id             chat-id
                           :action              action
                           :text                text
-                          :message-id          message-id
+                          :message_id          message-id
                           :reply_to_message_id reply-to-id}
             response (client/post url {:query-params     query-params
                                        :throw-exceptions false

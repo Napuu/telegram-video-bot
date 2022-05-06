@@ -19,7 +19,7 @@
           (send-telegram-command {:bot-token          token
                                   :chat-id            chat-id
                                   :method             "deleteMessage"
-                                  :deleted-message-id message-id}))
+                                  :message-id message-id}))
       (do
         (log/error "Something went wrong while trying to send file")
         (send-telegram-command {:bot-token   token

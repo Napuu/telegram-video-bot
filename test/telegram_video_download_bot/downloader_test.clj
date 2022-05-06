@@ -27,7 +27,7 @@
                     send-telegram-command (let [expected-arguments
                                                 (atom [{:method "sendChatAction" :action "upload_video"}
                                                        {:method "sendVideo" :reply-to-id 456}
-                                                       {:method "deleteMessage" :deleted-message-id 321}])]
+                                                       {:method "deleteMessage" :message-id 321}])]
                                             (fn [args] (let [expected (ffirst (swap-vals! expected-arguments rest))]
                                                          (testing "Make sure correct commands are sent to Telegram api"
                                                            (is (map-subset? expected args)))) 200))]
