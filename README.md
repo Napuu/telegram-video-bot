@@ -20,8 +20,10 @@ Put correct token in `config.edn`.
 This expects following executables to be available at current PATH `curl` and `yt-dlp`.  
 
 Run `podman-compose up message-queue` to start message queue, then   
-`lein run ingester` - reads messages from Telegram api and send them to the message queue if they end with configured postfix.  
+`lein ring server` - start dev server to listen for updates (https://core.telegram.org/bots/api#setwebhook)
 `lein run handler` - reads messages from the message queue, downloads videos and posts them to the group.
+
+`lein repl` recommended for developing individual parts.
 
 ### With Podman
 
