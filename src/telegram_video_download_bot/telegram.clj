@@ -32,6 +32,8 @@
             response (client/post url {:query-params     query-params
                                        :throw-exceptions false
                                        :multipart        (when file [{:name    "video"
-                                                                      :content (clojure.java.io/file file)}])})]
-        (:status response))
+                                                                      :content (clojure.java.io/file file)}])})
+            status (:status response)]
+        (log/info "Telegram command sent; method:" method "status:" status)
+        status)
       (log/error "At least :bot-token, :chat-id and :method must be provided."))))
