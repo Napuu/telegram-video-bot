@@ -1,5 +1,6 @@
 (ns telegram-video-download-bot.util
   (:require [clojure.java.shell :refer [sh]]
+            [clojure.java.io :as io]
             [clojure.string :as str]
             [clojure.tools.logging :as log]
             [telegram-video-download-bot.config :refer [get-config-value]]))
@@ -28,7 +29,7 @@
          (some (fn [word] (str/includes? message word)) blacklisted-words))))
 
 (defn download-file
-  "Download file and return its locations on disk. Return false on fail."
+  "Download file and return its locations on disk. Return nil on fail."
   [url target-dir]
   (log/info "Downloading file")
   (let [filename (str/trim (:out (sh "yt-dlp" "-S" "codec:h264" "--get-filename" "--merge-output-format" "mp4" url)))
@@ -37,6 +38,10 @@
     (if (str/ends-with? filename ".mp4")
       ;; if filename ends with ".mp4", no additional conversion is needed
       full-path
-      ;; if not, run it through ffmpeg
-      (do (sh "ffmpeg" "-i" full-path (str full-path ".mp4"))
-          (str full-path ".mp4")))))
+      ;; if not, it is one of two scenarios,
+      ;; 1. no file was found
+      ;; 2. only webm or some other non-mp4 format was available
+      (when (and (true? filename)
+                 (.exists (io/as-file full-path)))
+        (do (sh "ffmpeg" "-i" full-path (str full-path ".mp4"))
+            (str full-path ".mp4"))))))

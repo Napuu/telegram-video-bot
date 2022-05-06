@@ -15,6 +15,4 @@ RUN apt-get update && apt-get install python3 ffmpeg -y
 WORKDIR /app
 COPY --from=clojure-build /tmp/out.jar .
 
-LABEL com.centurylinklabs.watchtower.enable="true"
-
 ENTRYPOINT ["java", "-jar", "out.jar"]
