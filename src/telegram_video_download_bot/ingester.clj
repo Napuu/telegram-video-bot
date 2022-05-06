@@ -25,18 +25,12 @@
                                   :method      "sendMessage"
                                   :reply-to-id message-id
                                   :text        (get-config-value :base-error-message)}))))))
-(defn handler [request]
-  (ingest-telegram-message (:message (:body request)))
-  (response "OK"))
 
 (def app
-  (wrap-json-body handler {:keywords? true}))
+  (wrap-json-body
+    (fn [request]
+      (ingest-telegram-message (:message (:body request)))
+      (response "OK")) {:keywords? true}))
 
-(comment
-  (enqueue-link
-    :link "localhost123"
-    :chat-id -1001764073348
-    :message-id 1083))
-
-(defn start-server [& args]
-  (run-jetty app {:port (Integer/valueOf (or (System/getenv "port") "3020"))}))
+(defn start-server [& _]
+  (run-jetty app {:port (Integer/parseInt (or (System/getenv "port") "3020"))}))

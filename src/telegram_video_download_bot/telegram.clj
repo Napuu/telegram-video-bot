@@ -34,25 +34,3 @@
                                                                       :content (clojure.java.io/file file)}])})]
         (:status response))
       (log/error "At least :bot-token, :chat-id and :method must be provided."))))
-
-(comment
-  ; "5146505461:AAF3vkhitoyamx_EIwNlV9zGx_pZaAeHW_4" -1001764073348 "upload_video"
-  (send-telegram-command {:bot-token "5146505461:AAF3vkhitoyamx_EIwNlV9zGx_pZaAeHW_4"
-                          :method    "sendMessage"
-                          :chat-id   -10013764073348
-                          :text      "asdf"})
-  (send-telegram-command {:bot-token "5146505461:AAF3vkhitoyamx_EIwNlV9zGx_pZaAeHW_4"
-                          :method    "sendMessage"
-                          :chat-id   -10013764073348
-                          :text      "asdf"})
-  (send-telegram-command {:bot-token "5146505461:asdf"
-                          :method    "sendMessage"
-                          :text      "asdf"})
-  (if-let [kissa 1]
-    (println "asdf")
-    (println "not"))
-  (send-telegram-command {:bot-token "5146505461:AAF3vkhitoyamx_EIwNlV9zGx_pZaAeHW_4"
-                          :method    "sendVideo"
-                          :chat-id   -1001764073348
-                          :file      "/tmp/kissa.mp4"})
-  )

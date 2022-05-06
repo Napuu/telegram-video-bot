@@ -7,10 +7,6 @@
             [telegram-video-download-bot.telegram :refer [send-telegram-command]]
             [telegram-video-download-bot.util :refer [download-file]]))
 
-(comment
-  (let [json-string "{\"kissa\": 123}"]
-    (:kissa (json/read-str json-string :key-fn keyword))))
-
 (defn handle-successful-download
   [token chat-id reply-to-id file-location message-id base-error-message]
   (let [status-code (send-telegram-command {:bot-token   token
