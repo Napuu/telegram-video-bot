@@ -39,20 +39,25 @@
 (defn message-handler
   [_ _ ^bytes payload]
   (log/info "Received message")
-  (let [{link :link
-         chat-id :chat-id
-         message-id :message-id
+  (let [{link        :link
+         chat-id     :chat-id
+         message-id  :message-id
          reply-to-id :reply-to-id} (json/read-str (String. payload "UTF-8") :key-fn keyword)
         token (get-config-value :token)
         base-error-message (get-config-value :base-error-message)]
 
     (log/info "Starting file download")
-    (send-telegram-command {:bot-token token :chat-id chat-id :method "sendChatAction" :action "upload_video"})
 
-    (let [file-location (download-file link "/tmp")]
-      (if (nil? file-location)
-        (handle-unsuccessful-download token chat-id message-id base-error-message)
-        (handle-successful-download token chat-id reply-to-id file-location message-id base-error-message)))))
+    (let [sending-status (future (while 1
+                                   (send-telegram-command {:bot-token token :chat-id chat-id :method "sendChatAction" :action "upload_video"})
+                                   ; chat actions persist for 5 seconds, thus waiting for 4800ms before sending a new one
+                                   (Thread/sleep 4800)))
+          actual-sending (future (let [file-location (download-file link "/tmp")]
+                                   (if (nil? file-location)
+                                     (handle-unsuccessful-download token chat-id message-id base-error-message)
+                                     (handle-successful-download token chat-id reply-to-id file-location message-id base-error-message))))]
+      @actual-sending
+      (future-cancel sending-status))))
 
 (defn start-downloader []
   (let [{:keys [:ch :qname]} @@global-mq-connection]
