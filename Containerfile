@@ -17,4 +17,4 @@ COPY --from=clojure-build /tmp/out.jar .
 
 LABEL com.centurylinklabs.watchtower.enable="true"
 
-CMD java -jar out.jar
+ENTRYPOINT ["java", "-jar", "out.jar"]
