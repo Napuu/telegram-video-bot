@@ -1,6 +1,5 @@
 (ns telegram-video-download-bot.util
   (:require [clojure.java.shell :refer [sh]]
-            [clojure.java.io :as io]
             [clojure.string :as str]
             [clojure.tools.logging :as log]
             [telegram-video-download-bot.config :refer [get-config-value]]))
@@ -28,20 +27,40 @@
     (and (> 0 (count blacklisted-words))
          (some (fn [word] (str/includes? message word)) blacklisted-words))))
 
+(def yt-dlp-base-args ["yt-dlp" "-S" "codec:h264" "--merge-output-format" "mp4"])
+
+(defn yt-dlp-get-filename [url]
+  "Get filename for url with yt-dlp. Return nil if link is not downloadable."
+  (let [filename (-> (apply sh (concat yt-dlp-base-args ["--get-filename" url]))
+                     :out
+                     str/trim)]
+    (when (-> filename str/blank? not) filename)))
+
+(defn yt-dlp-download-file [output-path url]
+  "Download url to output-path with yt-dlp. Return exit code of yt-dlp."
+  (-> (apply sh (concat yt-dlp-base-args ["-o" output-path url]))
+      :exit))
+
+(defn handle-non-mp4 [output-path]
+  "Check that file is actually mp4. Returns path that is guaranteed to be mp4, nil on fail.
+
+  Even though we specifically request mp4-file, something else,
+  usually webm-file might be downloaded as well. In that scenario,
+  it's converted to mp4 via ffmpeg."
+
+  (if (str/ends-with? output-path ".mp4")
+    output-path
+    (let [new-output-path (str output-path ".mp4")
+          ffmpeg-exit-code (-> (sh "ffmpeg" "-y" "-i" output-path new-output-path) :exit)]
+      (when (= ffmpeg-exit-code 0)
+        new-output-path))))
+
 (defn download-file
   "Download file and return its locations on disk. Return nil on fail."
   [url target-dir]
   (log/info "Downloading file")
-  (let [filename (str/trim (:out (sh "yt-dlp" "-S" "codec:h264" "--get-filename" "--merge-output-format" "mp4" url)))
-        full-path (filename-to-full-path target-dir filename)]
-    (sh "yt-dlp" "-S" "codec:h264" "--merge-output-format" "mp4" "-o" full-path url)
-    (if (str/ends-with? filename ".mp4")
-      ;; if filename ends with ".mp4", no additional conversion is needed
-      full-path
-      ;; if not, it is one of two scenarios,
-      ;; 1. no file was found
-      ;; 2. only webm or some other non-mp4 format was available
-      (when (and (not (str/blank? filename))
-                 (.exists (io/as-file full-path)))
-        (do (sh "ffmpeg" "-i" full-path (str full-path ".mp4"))
-            (str full-path ".mp4"))))))
+  (when-let [filename (yt-dlp-get-filename url)]
+    (let [full-path (filename-to-full-path target-dir filename)
+          yt-dlp-exit-code (yt-dlp-download-file full-path url)]
+      (when (= yt-dlp-exit-code 0)
+        (handle-non-mp4 full-path)))))
