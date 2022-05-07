@@ -5,7 +5,8 @@
             [telegram-video-download-bot.config :refer [get-config-value]]
             [telegram-video-download-bot.mq :refer [global-mq-connection]]
             [telegram-video-download-bot.telegram :refer [send-telegram-command]]
-            [telegram-video-download-bot.util :refer [download-file]]))
+            [telegram-video-download-bot.util :refer [download-file]]
+            [clojure.java.io :as io]))
 
 (defn handle-successful-download
   [token chat-id reply-to-id file-location message-id base-error-message]
@@ -53,7 +54,7 @@
                                    ; chat actions persist for 5 seconds, thus waiting for 4800ms before sending a new one
                                    (Thread/sleep 4800)))
           actual-sending (future (let [file-location (download-file link "/tmp")]
-                                   (if (nil? file-location)
+                                   (if (or (nil? file-location) (not (.exists (io/as-file file-location))))
                                      (handle-unsuccessful-download token chat-id message-id base-error-message)
                                      (handle-successful-download token chat-id reply-to-id file-location message-id base-error-message))))]
       @actual-sending
