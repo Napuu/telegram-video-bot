@@ -1,5 +1,6 @@
 (ns telegram-video-download-bot.downloader_test
   (:require [clojure.test :refer :all]
+            [clojure.java.io :as io]
             [telegram-video-download-bot.util :refer [download-file]]
             [telegram-video-download-bot.telegram :refer [send-telegram-command]]
             [telegram-video-download-bot.downloader :refer [message-handler]]))
@@ -18,12 +19,13 @@
         \"chat-id\": %d,
         \"message-id\": %d,
         \"reply-to-id\": %d
-        }" link chat-id message-id reply-to-id))]
-
+        }" link chat-id message-id reply-to-id))
+        tmp-file (str "/tmp/" (java.util.UUID/randomUUID))]
+    (spit tmp-file "text")
     (testing "Successful send"
       (with-redefs [download-file (fn [url _]
                                     (is (= url link))
-                                    "mock-location")
+                                    tmp-file)
                     send-telegram-command (let [expected-arguments
                                                 (atom [{:method "sendChatAction" :action "upload_video"}
                                                        {:method "sendVideo" :reply-to-id 456}
@@ -32,11 +34,10 @@
                                                          (testing "Make sure correct commands are sent to Telegram api"
                                                            (is (map-subset? expected args)))) 200))]
         (message-handler nil nil mq-byte-response)))
-
     (testing "Unsuccessful send"
       (with-redefs [download-file (fn [url _]
                                     (is (= url link))
-                                    false)
+                                    tmp-file)
                     send-telegram-command (let [expected-arguments
                                                 (atom [{:args {:method "sendChatAction" :action "upload_video"} :resp 200}
                                                        {:args {:method "sendVideo" :reply-to-id 456} :resp 413}
@@ -47,4 +48,5 @@
                                                          (testing "Make sure correct commands are sent to Telegram api,
                                                                    when file is too big."
                                                            (is (map-subset? expected-args args))) status-code)))]
-        (message-handler nil nil mq-byte-response)))))
+        (message-handler nil nil mq-byte-response)))
+    (io/delete-file tmp-file)))
