@@ -1,6 +1,7 @@
 (ns telegram-video-download-bot.util
   (:require [clojure.java.shell :refer [sh]]
             [clojure.string :as str]
+            [clj-http.client :as client]
             [clojure.tools.logging :as log]
             [telegram-video-download-bot.config :refer [get-config-value]]))
 
@@ -28,6 +29,16 @@
          (some (fn [word] (str/includes? message word)) blacklisted-words))))
 
 (def yt-dlp-base-args ["yt-dlp" "-S" "codec:h264" "--merge-output-format" "mp4"])
+
+(defn get-redirect-url [url]
+  "Returns Location header from response if it exists, original url otherwise."
+  (let [new-url (-> url
+                    (client/get {:redirect-strategy :none})
+                    :headers
+                    :location)]
+    (if (str/blank? new-url)
+      url
+      new-url)))
 
 (defn yt-dlp-get-filename [url]
   "Get filename for url with yt-dlp. Return nil if link is not downloadable."
@@ -59,8 +70,10 @@
   "Download file and return its locations on disk. Return nil on fail."
   [url target-dir]
   (log/info "Downloading file")
-  (when-let [filename (yt-dlp-get-filename url)]
-    (let [full-path (filename-to-full-path target-dir filename)
-          yt-dlp-exit-code (yt-dlp-download-file full-path url)]
-      (when (= yt-dlp-exit-code 0)
-        (handle-non-mp4 full-path)))))
+  ; get-redirect-url is needed below as sometimes yt-dlp can't follow redirects properly
+  (let [redirect-fixed-url (get-redirect-url url)]
+    (when-let [filename (yt-dlp-get-filename redirect-fixed-url)]
+      (let [full-path (filename-to-full-path target-dir filename)
+            yt-dlp-exit-code (yt-dlp-download-file full-path redirect-fixed-url)]
+        (when (= yt-dlp-exit-code 0)
+          (handle-non-mp4 full-path))))))
