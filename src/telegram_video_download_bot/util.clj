@@ -32,13 +32,15 @@
 
 (defn get-redirect-url [url]
   "Returns Location header from response if it exists, original url otherwise."
-  (let [new-url (-> url
-                    (client/get {:redirect-strategy :none})
-                    :headers
-                    :location)]
-    (if (str/blank? new-url)
-      url
-      new-url)))
+  (try
+    (let [new-url (-> url
+                      (client/get {:redirect-strategy :none})
+                      :headers
+                      :location)]
+      (if (str/blank? new-url)
+        url
+        new-url))
+    (catch Exception _ url)))
 
 (defn yt-dlp-get-filename [url]
   "Get filename for url with yt-dlp. Return nil if link is not downloadable."
@@ -77,3 +79,6 @@
             yt-dlp-exit-code (yt-dlp-download-file full-path redirect-fixed-url)]
         (when (= yt-dlp-exit-code 0)
           (handle-non-mp4 full-path))))))
+
+(comment
+  (get-redirect-url "asdf"))
