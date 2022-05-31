@@ -28,7 +28,7 @@
     (and (> 0 (count blacklisted-words))
          (some (fn [word] (str/includes? message word)) blacklisted-words))))
 
-(def yt-dlp-base-args ["yt-dlp" "-S" "codec:h264" "--merge-output-format" "mp4"])
+(def yt-dlp-base-args ["yt-dlp" "--merge-output-format" "mp4"])
 
 (defn get-redirect-url [url]
   "Returns Location header from response if it exists, original url otherwise."
