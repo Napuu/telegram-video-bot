@@ -35,8 +35,9 @@
                        "-S"
                        "codec:h264"])
 
-(defn get-redirect-url [url]
+(defn get-redirect-url
   "Returns Location header from response if it exists, original url otherwise."
+  [url]
   (try
     (let [new-url (-> url
                       (client/get {:redirect-strategy :none})
@@ -47,24 +48,19 @@
         new-url))
     (catch Exception _ url)))
 
-(defn yt-dlp-get-filename [url]
-  "Get filename for url with yt-dlp. Return nil if link is not downloadable."
-  (let [filename (-> (apply sh (concat yt-dlp-base-args ["--get-filename" url]))
-                     :out
-                     str/trim)]
-    (when (-> filename str/blank? not) filename)))
-
-(defn yt-dlp-download-file [output-path url]
+(defn yt-dlp-download-file
   "Download url to output-path with yt-dlp. Return exit code of yt-dlp."
+  [output-path url]
   (-> (apply sh (concat yt-dlp-base-args ["-o" output-path url]))
       :exit))
 
-(defn handle-non-mp4 [output-path]
+(defn handle-non-mp4
   "Check that file is actually mp4. Returns path that is guaranteed to be mp4, nil on fail.
 
   Even though we specifically request mp4-file, something else,
   usually webm-file might be downloaded as well. In that scenario,
   it's converted to mp4 via ffmpeg."
+  [output-path]
 
   (if (str/ends-with? output-path ".mp4")
     output-path
@@ -79,7 +75,7 @@
   (log/info "Downloading file")
   ; get-redirect-url is needed below as sometimes yt-dlp can't follow redirects properly
   (let [redirect-fixed-url (get-redirect-url url)]
-    (when-let [filename (yt-dlp-get-filename redirect-fixed-url)]
+    (when-let [filename (str (java.util.UUID/randomUUID) ".mp4")]
       (let [full-path (filename-to-full-path target-dir filename)
             yt-dlp-exit-code (yt-dlp-download-file full-path redirect-fixed-url)]
         (when (= yt-dlp-exit-code 0)
