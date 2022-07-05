@@ -32,7 +32,7 @@
 
 (def yt-dlp-base-args ["yt-dlp" 
                        "--merge-output-format" "mp4"
-                       "--max-filesize" "50m"
+                       "--max-filesize" "200m"
                        "-S" "codec:h264"])
 
 (defn get-redirect-url
