@@ -1,3 +1,4 @@
+
 (ns telegram-video-download-bot.downloader_test
   (:require [clojure.test :refer :all]
             [clojure.java.io :as io]
@@ -23,7 +24,7 @@
         tmp-file (str "/tmp/" (java.util.UUID/randomUUID))]
     (spit tmp-file "text")
     (testing "Successful send"
-      (with-redefs [download-file (fn [url _]
+      (with-redefs [download-file (fn [url _ _]
                                     (is (= url link))
                                     tmp-file)
                     send-telegram-command (let [expected-arguments
@@ -35,7 +36,7 @@
                                                            (is (map-subset? expected args)))) 200))]
         (message-handler nil nil mq-byte-response)))
     (testing "Unsuccessful send"
-      (with-redefs [download-file (fn [url _]
+      (with-redefs [download-file (fn [url _ _]
                                     (is (= url link))
                                     tmp-file)
                     send-telegram-command (let [expected-arguments

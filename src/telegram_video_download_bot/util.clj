@@ -28,12 +28,12 @@
     (and (> 0 (count blacklisted-words))
          (some (fn [word] (str/includes? message word)) blacklisted-words))))
 
+(def yt-dlp-additional-args "-f" "((bv*[fps>30]/bv*)[height<=720]/(wv*[fps>30]/wv*)) + ba / (b[fps>30]/b)[height<=720]/(w[fps>30]/w)")
+
 (def yt-dlp-base-args ["yt-dlp" 
                        "--merge-output-format" "mp4"
                        "--max-filesize" "50m"
-                       "-f" "((bv*[fps>30]/bv*)[height<=720]/(wv*[fps>30]/wv*)) + ba / (b[fps>30]/b)[height<=720]/(w[fps>30]/w)"
-                       "-S"
-                       "codec:h264"])
+                       "-S" "codec:h264"])
 
 (defn get-redirect-url
   "Returns Location header from response if it exists, original url otherwise."
@@ -50,8 +50,8 @@
 
 (defn yt-dlp-download-file
   "Download url to output-path with yt-dlp. Return exit code of yt-dlp."
-  [output-path url]
-  (-> (apply sh (concat yt-dlp-base-args ["-o" output-path url]))
+  [output-path url try-additional-args]
+  (-> (apply sh (concat yt-dlp-base-args ["-o" output-path url] (if try-additional-args yt-dlp-additional-args "")))
       :exit))
 
 (defn handle-non-mp4
@@ -71,11 +71,11 @@
 
 (defn download-file
   "Download file and return its locations on disk. Return nil on fail."
-  [url target-dir]
+  [url target-dir try-additional-args]
   (log/info "Downloading file")
   (when-let [filename (str (java.util.UUID/randomUUID) ".mp4")]
     (let [full-path (filename-to-full-path target-dir filename)
-          yt-dlp-exit-code (yt-dlp-download-file full-path url)]
+          yt-dlp-exit-code (yt-dlp-download-file full-path url try-additional-args)]
       (when (= yt-dlp-exit-code 0)
         (handle-non-mp4 full-path)))))
 
