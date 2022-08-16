@@ -21,54 +21,35 @@
 (defn string-to-integer-or [string default]
   (if (integer? string) string (try (Integer/parseInt string)
                                     (catch NumberFormatException _ default)) ))
-(defn string-to-seconds-or-nil [string]
-  (let [minutes-split (str/split string #"m")
-        has-minutes (str/includes? string "m")
-        minutes-split-count (count minutes-split)
-        seconds-split-after-minutes (str/split (str/join (or (next minutes-split) string)) #"s")
-        seconds-split-count (count seconds-split-after-minutes)]
-    (if (or (> minutes-split-count 2)
-            (> seconds-split-count 1))
-      nil ; string had more than one 's' or 'm' -> it cannot be parsed
-      (string-to-integer-or 
-        (case [minutes-split-count seconds-split-count]
-          [1 1] (if has-minutes (* (string-to-integer-or (first minutes-split) 0) 60)
-                  (first seconds-split-after-minutes))
-          [1 2] (first seconds-split-after-minutes)
-          [2 1] (+ (* (string-to-integer-or (first minutes-split) 0) 60) (string-to-integer-or (first seconds-split-after-minutes) 0))
-          nil) nil))))
+(defn string-to-seconds-or-nil
+  "Get total seconds from string, e.g., '1m25s'->85."
+  [string]
+  (if (nil? string) nil
+    (let [minutes-split (str/split string #"m")
+          has-minutes (str/includes? string "m")
+          minutes-split-count (count minutes-split)
+          seconds-split-after-minutes (str/split (str/join (or (next minutes-split) string)) #"s")
+          seconds-split-count (count seconds-split-after-minutes)]
+      (if (or (> minutes-split-count 2)
+              (> seconds-split-count 1))
+        nil ; string had more than one 's' or 'm' -> it cannot be parsed
+        (string-to-integer-or
+          (case [minutes-split-count seconds-split-count]
+            [1 1] (if has-minutes (* (string-to-integer-or (first minutes-split) 0) 60)
+                    (first seconds-split-after-minutes))
+            [1 2] (first seconds-split-after-minutes)
+            [2 1] (+ (* (string-to-integer-or (first minutes-split) 0) 60) (string-to-integer-or (first seconds-split-after-minutes) 0))
+            nil) nil)) )))
 
-(comment 
-  ; TODO - move these to test file
-  (string-to-seconds-or-nil "126")
-  (string-to-seconds-or-nil "26s")
-  (string-to-seconds-or-nil "1m26s")
-  (string-to-seconds-or-nil "1m26")
-  (string-to-seconds-or-nil "2m26s")
-  (string-to-seconds-or-nil "1m")
-  (string-to-seconds-or-nil "2m")
-  (string-to-seconds-or-nil "9m")
-  (string-to-seconds-or-nil "hello"))
-
-(defn parse-message
+(defn matching-url
   "Return triple (url, ts-start, duration), if text ends with @postfix, nil for not existing args."
   [text postfix]
   (let [split ( str/split text #" ")
         last-arg (last split)]
     (if (= last-arg postfix)
       (let [ [url start end] split]
-        [url (string-to-seconds-or-nil start)])
-      nil)))
-
-(comment
-  (Integer/parseInt "x1")
-  (def kissa (str/split "asdfasdf1fdsa1fdsa" #"1"))
-  (let [args (drop-last kissa)
-        [url start end] args]
-    (prn url start end)
-    (prn args))
-  (parse-message "asdfasdf 10 30 l" "dl")
-  (parse-message "asdfasdf 10 30 dl" "dl"))
+        [url (string-to-seconds-or-nil start) (string-to-seconds-or-nil end)])
+      [nil nil nil])))
 
 (defn contains-blacklisted-word?
   "Return true if message contains blacklisted word, nil otherwise"
