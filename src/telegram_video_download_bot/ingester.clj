@@ -5,11 +5,11 @@
             [ring.middleware.json :refer [wrap-json-body]]
             [ring.util.response :refer [response]]
             [telegram-video-download-bot.telegram :refer [send-telegram-command]]
-            [telegram-video-download-bot.util :refer [contains-blacklisted-word? matching-url]]))
+            [telegram-video-download-bot.util :refer [contains-blacklisted-word? parse-message]]))
 
 (defn ingest-telegram-message [message]
   (when (not (nil? (:text message)))
-    (let [link (matching-url (:text message) (get-config-value :postfix))
+    (let [[link _ _] (parse-message (:text message) (get-config-value :postfix))
           contains-blacklisted-word (and link (contains-blacklisted-word? link))
           chat-id (:id (:chat message))
           message-id (:message_id message)

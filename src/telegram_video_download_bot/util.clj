@@ -41,7 +41,7 @@
             [2 1] (+ (* (string-to-integer-or (first minutes-split) 0) 60) (string-to-integer-or (first seconds-split-after-minutes) 0))
             nil) nil)) )))
 
-(defn matching-url
+(defn parse-message
   "Return triple (url, ts-start, duration), if text ends with @postfix, nil for not existing args."
   [text postfix]
   (let [split ( str/split text #" ")

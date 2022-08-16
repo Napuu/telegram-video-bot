@@ -1,7 +1,7 @@
 (ns telegram-video-download-bot.util-test
   (:require [clojure.test :refer [deftest is testing]]
             [telegram-video-download-bot.util :refer [string-to-seconds-or-nil
-                                                      matching-url]]))
+                                                      parse-message]]))
 
 (deftest test-string-to-seconds-or-nil
   (testing "Parsing seconds from string\n"
@@ -19,7 +19,7 @@
       (testing (str "Input: " input ", expected output: " (or expected-output "nil"))
         (is (= (string-to-seconds-or-nil input) expected-output))))))
 
-(deftest test-matching-url
+(deftest test-parse-message
   (testing "Matching url captures content correctly"
     (doseq [[input expected-output] [["url dl" ["url" nil nil]]
                                      ["url 1 kissa dl" ["url" 1 nil]]
@@ -28,4 +28,4 @@
                                      ["url dl 334" [nil nil nil]]
                                      ["url 1 2 dl" ["url" 1 2]]]]
       (testing (str "Input: " input ", expected output: " (or expected-output "nil"))
-        (is (= (matching-url input "dl") expected-output))))))
+        (is (= (parse-message input "dl") expected-output))))))
