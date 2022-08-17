@@ -5,7 +5,7 @@
 (def config-map {:token                 (env :token)
                  :target-dir            (or (env :target-dir) "/tmp")
                  :blacklist             (str/split (or (env :blacklist) "") #";")
-                 :postfix               (or (env :postfix) " dl")
+                 :postfix               (or (env :postfix) "dl")
                  :mq-host               (or (env :mq-host) "localhost")
                  :mq-port               (Integer/parseInt (or (env :mq-port) "5672"))
                  :base-error-message    (or (env :base-error-message) "Hyvä linkki......")

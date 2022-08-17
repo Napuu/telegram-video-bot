@@ -32,7 +32,7 @@
   (testing "Test that message not ending to ' dl' is just ignored."
     (let [enqueue-called? (atom false)
           webhook-update (example-webhook-update "normal message")]
-      (with-redefs [enqueue-link (fn [& {:keys [link chat-id message-id reply-to-id retries]}]
+      (with-redefs [enqueue-link (fn [& {:keys []}]
                                    (reset! enqueue-called? true))]
         (is (= (app (-> (mock/request :post "/")
                         (mock/json-body webhook-update)))
@@ -41,13 +41,18 @@
 
 (deftest webhook-handler-test-actual-link
   (testing "Test that message ending ' dl' is correctly sent to the message queue"
-    (let [expected-link "https://example.com/link"
+    (let [enqueue-called? (atom false)
+          expected-link "https://example.com/link"
           webhook-update (example-webhook-update (str expected-link " dl"))]
-      (with-redefs [enqueue-link (fn [& {:keys [link chat-id message-id reply-to-id]}]
+      (with-redefs [enqueue-link (fn [& {:keys [link chat-id start duration message-id reply-to-id]}]
+                                   (reset! enqueue-called? true)
                                    (is (= link expected-link))
+                                   (is (= start nil))
+                                   (is (= duration nil))
                                    (is (= chat-id (:id (:chat (:message webhook-update)))))
                                    (is (= message-id (:message_id (:message webhook-update))))
                                    (is (= reply-to-id (:message_id (:reply_to_message (:message webhook-update))))))]
         (is (= (app (-> (mock/request :post "/")
                         (mock/json-body webhook-update)))
-               expected-response))))))
+               expected-response) "Should respond with 200")
+        (is (= true @enqueue-called?) "Should actually call enqueue-link")))))

@@ -9,7 +9,7 @@
 
 (defn ingest-telegram-message [message]
   (when (not (nil? (:text message)))
-    (let [[link _ _] (parse-message (:text message) (get-config-value :postfix))
+    (let [[link start duration] (parse-message (:text message) (get-config-value :postfix))
           contains-blacklisted-word (and link (contains-blacklisted-word? link))
           chat-id (:id (:chat message))
           message-id (:message_id message)
@@ -18,6 +18,8 @@
         (if (not contains-blacklisted-word)
           (enqueue-link
             :link link
+            :start start
+            :duration duration
             :chat-id chat-id
             :message-id message-id
             :reply-to-id reply-to-id)

@@ -38,20 +38,28 @@
 (defn enqueue-link
   "Send link to message queue - retries on failure
      link - link to the actual video
+     start - trim video start in seconds
+     duration - duration of trimmed clip in seconds
+     message-id - id of the original message
      chat-id - Telegram's chat id
      reply-to-id - if exists, video was sent as a reply"
-  [& {:keys [link chat-id message-id reply-to-id retries]}]
+  [& {:keys [link chat-id start duration message-id reply-to-id retries]}]
   (let [connection @global-mq-connection
         retries (or retries 0)]
     (if (< retries 10)
       (try
-        (_enqueue-link :connection @connection :link link :chat-id chat-id :message-id message-id :reply-to-id reply-to-id)
+        (_enqueue-link
+          :connection @connection :link link
+          :start start :duration duration
+          :chat-id chat-id :message-id message-id :reply-to-id reply-to-id)
         (catch Exception _
           (log/error "Mq connection is not ok, retrying...")
           (Thread/sleep 2000)
           (enqueue-link
            :retries (inc retries)
            :link link
+           :start start
+           :duration duration
            :chat-id chat-id
            :message-id message-id
            :reply-to-id reply-to-id)))
