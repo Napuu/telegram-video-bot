@@ -24,8 +24,8 @@
         tmp-file (str "/tmp/" (java.util.UUID/randomUUID))]
     (spit tmp-file "text")
     (testing "Successful send"
-      (with-redefs [download-file (fn [url _ _]
-                                    (is (= url link))
+      (with-redefs [download-file (fn [& args]
+                                    (is (= (first args) link))
                                     tmp-file)
                     send-telegram-command (let [expected-arguments
                                                 (atom [{:method "sendChatAction" :action "upload_video"}
@@ -36,8 +36,8 @@
                                                            (is (map-subset? expected args)))) 200))]
         (message-handler nil nil mq-byte-response)))
     (testing "Unsuccessful send"
-      (with-redefs [download-file (fn [url _ _]
-                                    (is (= url link))
+      (with-redefs [download-file (fn [& args]
+                                    (is (= (first args) link))
                                     tmp-file)
                     send-telegram-command (let [expected-arguments
                                                 (atom [{:args {:method "sendChatAction" :action "upload_video"} :resp 200}
