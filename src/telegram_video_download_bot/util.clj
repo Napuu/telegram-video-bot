@@ -109,33 +109,12 @@
         (when (= ffmpeg-exit-code 0)
           new-output-path)))))
 
-(comment )
-
 (defn download-file
   "Download file and return its locations on disk. Return nil on fail."
-  [url target-dir try-additional-args]
+  [url target-dir try-additional-args start duration]
   (log/info "Downloading file")
   (when-let [filename (str (java.util.UUID/randomUUID) ".mp4")]
     (let [full-path (filename-to-full-path target-dir filename)]
       (yt-dlp-download-file full-path url try-additional-args)
-      (run-ffmpeg full-path nil nil))))
-; kissa
-
-
-(comment
-  (first (str/split (:out (sh "du" "-k" "/tmp/kissa2/02c22185-a50b-4c2d-a956-b09e750e471a.mp4")) #"\t"))
-
-  (file-too-big "/tmp/kissa2/02c22185-a50b-4c2d-a956-b09e750e471a.mp4")
-  (file-too-big "/tmp/kissa2/out.mp4")
-
-  (run-ffmpeg "/tmp/kissa2/ac1e6f7e-4652-491f-a487-e4f33762a2ae.mp4" nil nil)
-  (file-too-big "/tmp/kissa2/ac1e6f7e-4652-491f-a487-e4f33762a2ae.mp4")
-  (download-file "https://v.ylilauta.org/48/02/480240b59311cb9f.mp4" "/tmp/kissa2" false)
-  (download-file "https://reddit.com/r/facepalm/comments/vrsghx/nothing_better_to_reconnect_with_nature/" "/tmp/kissa2" true)
-  (download-file "https://www.youtube.com/shorts/ghZw9e9TWOY" "/tmp/kissa2" false)
-  (download-file "https://www.tiktok.com/@sotkusissi/video/7109353568062229766?_t=8TD85loS65O&_r=1" "/tmp/kissa2" false) ; #object[telegram_video_download_bot.util$download_file 0x5eb8be5c "telegram_video_download_bot.util$download_file@5eb8be5c"]
-  (download-file "https://twitter.com/francis_scarr/status/1531266877317689345" "/tmp/kissa2" false)
-  ;(get-redirect-url "https://www.tiktok.com/@sotkusissi/video/7109353568062229766?_t=8TD85loS65O&_r=1" false)
-  (println "kissa")
-  (download-file "https://twitter.com/i/status/1534432957741551616" "/tmp/kissa3" false))
+      (run-ffmpeg full-path start duration))))
 
