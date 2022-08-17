@@ -3,8 +3,6 @@ name: Container Image CI
 on:
   push:
     branches: [ main ]
-  pull_request:
-    branches: [ main ]
   schedule:
     # sunday 04:05
     - cron:  '5 4 * * 0'
