@@ -100,11 +100,11 @@
     (if (and (str/ends-with? output-path ".mp4") (not too-big?) (and (nil? start) (nil? duration)))
       output-path
       (let [new-output-path (str output-path "_new.mp4")
-            ffmpeg-output (sh (remove nil? (flatten
-                                             ["ffmpeg" "-y"
-                                              (and start ["-ss" start])
-                                              (and (and start duration) ["-t" duration])
-                                              "-i" output-path "-fs" (str max-size-out) new-output-path]) ))
+            ffmpeg-output (apply sh (remove nil? (flatten
+                                                   ["ffmpeg" "-y"
+                                                    (and start ["-ss" (str start)])
+                                                    (and (and start duration) ["-t" (str duration)])
+                                                    "-i" output-path "-fs" (str max-size-out) new-output-path]) ))
             ffmpeg-exit-code (:exit ffmpeg-output)]
         (when (= ffmpeg-exit-code 0)
           new-output-path)))))

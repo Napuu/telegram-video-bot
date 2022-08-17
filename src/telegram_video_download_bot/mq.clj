@@ -28,11 +28,11 @@
 (def global-mq-connection (atom (delay (get-mq-connection))))
 
 (defn _enqueue-link
-  [& {:keys [link chat-id message-id reply-to-id connection]}]
+  [& {:keys [link chat-id start duration message-id reply-to-id connection]}]
   (log/info "Sending message to queue")
   (let [{:keys [ch qname]} connection]
     (lb/publish ch default-exchange-name qname
-                (json/write-str {:link link :chat-id chat-id :message-id message-id :reply-to-id reply-to-id})
+                (json/write-str {:link link :chat-id chat-id :start start :duration duration :message-id message-id :reply-to-id reply-to-id})
                 {:content-type "text/plain" :type "telegram.link"})))
 
 (defn enqueue-link

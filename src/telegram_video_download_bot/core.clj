@@ -16,7 +16,7 @@
   (start-downloader))
 
 (defn no-match []
-  (println "No match, exiting")
+  (log/error "No match, exiting")
   (System/exit 1))
 
 (defn start [args]
