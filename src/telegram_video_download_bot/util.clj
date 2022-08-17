@@ -88,21 +88,28 @@
   (> (.length (io/file filename)) max-size-out))
 
 (defn run-ffmpeg
-  "Check that file is actually mp4 and not too big. Returns path that is guaranteed to be mp4 of proper size, nil on fail.
+  "Check that file is actually mp4 and not too big. Also trims it.
+   Returns path that is guaranteed to be mp4 of proper size, nil on fail.
 
   Even though we specifically request mp4-file, something else,
   usually webm-file might be downloaded as well. In that scenario,
   it's converted to mp4 via ffmpeg. '-fs'-flag is used to stop writing after file is big enough."
-  [output-path]
+  [output-path start duration]
 
   (let [too-big? (file-too-big output-path)]
-    (if (and (str/ends-with? output-path ".mp4") (not too-big?))
+    (if (and (str/ends-with? output-path ".mp4") (not too-big?) (and (nil? start) (nil? duration)))
       output-path
       (let [new-output-path (str output-path "_new.mp4")
-            ffmpeg-output (sh "ffmpeg" "-y" "-i" output-path "-fs" (str max-size-out) new-output-path)
+            ffmpeg-output (sh (remove nil? (flatten
+                                             ["ffmpeg" "-y"
+                                              (and start ["-ss" start])
+                                              (and (and start duration) ["-t" duration])
+                                              "-i" output-path "-fs" (str max-size-out) new-output-path]) ))
             ffmpeg-exit-code (:exit ffmpeg-output)]
         (when (= ffmpeg-exit-code 0)
           new-output-path)))))
+
+(comment )
 
 (defn download-file
   "Download file and return its locations on disk. Return nil on fail."
@@ -111,7 +118,24 @@
   (when-let [filename (str (java.util.UUID/randomUUID) ".mp4")]
     (let [full-path (filename-to-full-path target-dir filename)]
       (yt-dlp-download-file full-path url try-additional-args)
-      (run-ffmpeg full-path))))
+      (run-ffmpeg full-path nil nil))))
+; kissa
+
 
 (comment
-  (get-redirect-url "asdf"))
+  (first (str/split (:out (sh "du" "-k" "/tmp/kissa2/02c22185-a50b-4c2d-a956-b09e750e471a.mp4")) #"\t"))
+
+  (file-too-big "/tmp/kissa2/02c22185-a50b-4c2d-a956-b09e750e471a.mp4")
+  (file-too-big "/tmp/kissa2/out.mp4")
+
+  (run-ffmpeg "/tmp/kissa2/ac1e6f7e-4652-491f-a487-e4f33762a2ae.mp4" nil nil)
+  (file-too-big "/tmp/kissa2/ac1e6f7e-4652-491f-a487-e4f33762a2ae.mp4")
+  (download-file "https://v.ylilauta.org/48/02/480240b59311cb9f.mp4" "/tmp/kissa2" false)
+  (download-file "https://reddit.com/r/facepalm/comments/vrsghx/nothing_better_to_reconnect_with_nature/" "/tmp/kissa2" true)
+  (download-file "https://www.youtube.com/shorts/ghZw9e9TWOY" "/tmp/kissa2" false)
+  (download-file "https://www.tiktok.com/@sotkusissi/video/7109353568062229766?_t=8TD85loS65O&_r=1" "/tmp/kissa2" false) ; #object[telegram_video_download_bot.util$download_file 0x5eb8be5c "telegram_video_download_bot.util$download_file@5eb8be5c"]
+  (download-file "https://twitter.com/francis_scarr/status/1531266877317689345" "/tmp/kissa2" false)
+  ;(get-redirect-url "https://www.tiktok.com/@sotkusissi/video/7109353568062229766?_t=8TD85loS65O&_r=1" false)
+  (println "kissa")
+  (download-file "https://twitter.com/i/status/1534432957741551616" "/tmp/kissa3" false))
+
