@@ -5,15 +5,18 @@
             [telegram-video-download-bot.config :refer [get-config-value]]
             [telegram-video-download-bot.mq :refer [global-mq-connection]]
             [telegram-video-download-bot.telegram :refer [send-telegram-command]]
-            [telegram-video-download-bot.util :refer [download-file]]
+            [telegram-video-download-bot.util :refer [download-file get-video-dimensions]]
             [clojure.java.io :as io]))
 
 (defn handle-successful-download
   [token chat-id reply-to-id file-location message-id base-error-message]
-  (let [status-code (send-telegram-command {:bot-token   token
+  (let [[width height] (get-video-dimensions file-location)
+        status-code (send-telegram-command {:bot-token   token
                                             :chat-id     chat-id
                                             :method      "sendVideo"
                                             :reply-to-id reply-to-id
+                                            :width       width
+                                            :height      height
                                             :file        file-location})]
     (if (= status-code 200)
       (do (log/info "File sent successfully")

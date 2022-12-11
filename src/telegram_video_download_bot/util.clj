@@ -118,3 +118,10 @@
       (yt-dlp-download-file full-path url try-additional-args)
       (run-ffmpeg full-path start duration))))
 
+(defn get-video-dimensions
+  [path]
+  ; https://stackoverflow.com/a/29585066/1550017
+   (let [out (str/split (:out (sh "ffprobe" "-v" "error" "-select_streams" "v" "-show_entries" "stream=width,height" "-of" "csv=p=0:s=x" path)) #"x")
+         width (first out)
+         height (first (str/split (second out) #"\n"))]
+      [(Integer/parseInt width) (Integer/parseInt height)]))
