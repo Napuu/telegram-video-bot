@@ -109,14 +109,27 @@
         (when (= ffmpeg-exit-code 0)
           new-output-path)))))
 
-(defn download-file
-  "Download file and return its locations on disk. Return nil on fail."
+; https://stackoverflow.com/a/27550676/1550017
+(defn timeout [timeout-ms callback]
+  (let [fut (future (callback))
+        ret (deref fut timeout-ms nil)]
+    (when (nil? ret)
+      (future-cancel fut))
+    ret))
+
+(defn download-file-no-timeout
   [url target-dir try-additional-args start duration]
-  (log/info "Downloading file")
   (when-let [filename (str (java.util.UUID/randomUUID) ".mp4")]
     (let [full-path (filename-to-full-path target-dir filename)]
       (yt-dlp-download-file full-path url try-additional-args)
       (run-ffmpeg full-path start duration))))
+
+(defn download-file
+  "Download file and return its locations on disk. Return nil on fail."
+  [url target-dir try-additional-args start duration]
+  (log/info "Downloading file")
+  (timeout (get-config-value :timeout-milliseconds) 
+           #(download-file-no-timeout url target-dir try-additional-args start duration)))
 
 (defn get-video-dimensions
   [path]
