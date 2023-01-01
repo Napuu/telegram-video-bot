@@ -60,17 +60,17 @@
           (send-telegram-command {:bot-token token :chat-id chat-id :method "sendChatAction" :action "upload_video"})
           ; chat actions persist for 5 seconds, thus waiting for 4800ms before sending a new one
           (Thread/sleep 4800)
-          (deliver p)))
+          (deliver p nil)))
       (future
         ; timeout of 5 minutes
         (Thread/sleep (get-config-value :timeout-milliseconds))
-        (deliver p))
+        (deliver p nil))
       (future (let [file-location (download-file link "/tmp" false start duration)
                     file-location (if (nil? file-location) (download-file link "/tmp" true start duration) file-location)]
                 (if (or (nil? file-location) (-> file-location io/as-file .exists not))
                   (handle-unsuccessful-download token chat-id message-id base-error-message)
                   (handle-successful-download token chat-id reply-to-id file-location message-id base-error-message))
-                (deliver p)))
+                (deliver p nil)))
       @p)))
 
 (comment
