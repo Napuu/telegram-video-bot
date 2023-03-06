@@ -3,7 +3,7 @@ COPY . .
 RUN lein uberjar
 RUN mv /tmp/target/uberjar/telegram-video-download-bot*-standalone.jar /tmp/out.jar
 
-FROM clojure:openjdk-18-lein-slim-bullseye as yt-dlp-build
+FROM clojure:temurin-19-lein as yt-dlp-build
 RUN apt update -y && apt-get install python3 build-essential zip git -y
 RUN cd /tmp && git clone https://github.com/yt-dlp/yt-dlp
 RUN cd /tmp/yt-dlp && make yt-dlp && mkdir -p /usr/local/bin && mv yt-dlp /usr/local/bin/
