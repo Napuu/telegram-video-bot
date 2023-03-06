@@ -1,4 +1,4 @@
-FROM clojure:temurin-17-tools-deps-focal as clojure-build
+FROM clojure:temurin-19-lein as clojure-build
 COPY . .
 RUN lein uberjar
 RUN mv /tmp/target/uberjar/telegram-video-download-bot*-standalone.jar /tmp/out.jar
