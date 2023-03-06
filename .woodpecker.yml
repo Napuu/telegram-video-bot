@@ -1,12 +1,24 @@
+branches: main
+
+variables:
+  - &file Containerfile
+  - &repo github.com/${CI_REPO_OWNER}/telegram-video-bot
+
 pipeline:
-  build:
-    image: plugins/docker
-    pull: never
+
+  publish:
+    image: woodpeckerci/plugin-docker-buildx
     settings:
-      repo: docker-registry2.napuu.xyz/bottitesti
+      dockerfile: *file
+      platforms: linux/amd64
+      repo: *repo
+      registry:
+        from_secret: registry-host
       tags: latest
-      secret: id=mysecret,src=secret-file
-      username:
-        from_secret: docker_username
+      username: 
+        from_secret: registry-user
       password:
-        from_secret: docker_password
+        from_secret: registry-password
+    when:
+      event: push
+      path: *file
