@@ -2,7 +2,7 @@ branches: main
 
 variables:
   - &file Containerfile
-  - &repo github.com/${CI_REPO_OWNER}/telegram-video-bot
+  - &repo github.com/napuu/telegram-video-bot
 
 pipeline:
 
@@ -21,4 +21,3 @@ pipeline:
         from_secret: registry-password
     when:
       event: push
-      path: *file
