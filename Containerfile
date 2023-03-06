@@ -15,4 +15,5 @@ RUN apt-get update && apt-get install python3 ffmpeg -y
 WORKDIR /app
 COPY --from=clojure-build /tmp/out.jar .
 
+#?? 
 ENTRYPOINT ["java", "-jar", "out.jar"]
