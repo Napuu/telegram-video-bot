@@ -11,7 +11,7 @@ RUN cd /tmp/yt-dlp && make yt-dlp && mkdir -p /usr/local/bin && mv yt-dlp /usr/l
 FROM clojure:openjdk-18-lein-slim-bullseye as run
 COPY --from=yt-dlp-build /usr/local/bin/yt-dlp /usr/local/bin/yt-dlp
 RUN chmod a+rx /usr/local/bin/yt-dlp
-RUN apt-get update && apt-get install python3 ffmpeg -y
+RUN apt update -y && apt-get install python3 ffmpeg -y
 WORKDIR /app
 COPY --from=clojure-build /tmp/out.jar .
 
