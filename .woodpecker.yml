@@ -1,23 +1,14 @@
-branches: main
+kind: pipeline
+name: default
 
-variables:
-  - &file Containerfile
-  - &repo docker-registry2.napuu.xyz/testings
-
-pipeline:
-
-  publish:
-    image: woodpeckerci/plugin-docker-buildx
-    settings:
-      dockerfile: *file
-      platforms: linux/amd64
-      repo: *repo
-      registry:
-        from_secret: registry-host
-      tags: latest
-      username: 
-        from_secret: registry-user
-      password:
-        from_secret: registry-password
-    when:
-      event: push
+steps:
+- name: build dummy docker file and publish
+  image: plugins/docker
+  pull: never
+  settings:
+    repo: docker-registry2.napuu.xyz/testings2
+    tags: latest
+    username:
+      from_secret: registry-user
+    password:
+      from_secret: registry-password
