@@ -1,11 +1,12 @@
-branches: main
-
 pipeline:
   publish:
-    image: plugins/docker
+    image: woodpeckerci/plugin-docker-buildx
     settings:
       dockerfile: Containerfile
+      platforms: linux/amd64
       repo: registry-internal.default.svc.cluster.local/testings3
+      registry:
+        from_secret: registry-host
       tags: latest
       username: 
         from_secret: registry-user
@@ -13,3 +14,4 @@ pipeline:
         from_secret: registry-password
     when:
       event: push
+
