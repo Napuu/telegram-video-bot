@@ -1,4 +1,7 @@
 FROM clojure:openjdk-8-lein-slim-buster
+# ??? :-D
+ENV http_proxy=http:...
+ENV https_proxy=http:...
 WORKDIR /app
 COPY . .
 
