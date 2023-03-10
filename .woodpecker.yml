@@ -1,17 +1,17 @@
 branches: main
 
 pipeline:
-
   publish:
-    image: woodpeckerci/plugin-docker-buildx
+    image: plugins/docker
     settings:
       dockerfile: Containerfile
-      platforms: linux/amd64
-      repo: container-registry.default.svc.cluster.local:5000/testings3
+      repo: docker-registry2.napuu.xyz/testings3
       tags: latest
       username: 
         from_secret: registry-user
       password:
         from_secret: registry-password
+      tags:
+      - latest
     when:
       event: push
