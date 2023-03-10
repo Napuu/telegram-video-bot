@@ -7,23 +7,12 @@
             [telegram-video-download-bot.ingester :refer [start-server]])
   (:gen-class))
 
-(defn start-message-ingester []
-  (log/info "Starting ingester")
-  (start-server))
-
-(defn start-message-handler []
-  (log/info "Starting handler")
-  (start-downloader))
-
-(defn no-match []
-  (log/error "No match, exiting")
-  (System/exit 1))
-
 (defn start [args]
   (match (vec (map keyword args))
-    [:ingester] (start-message-ingester)
-    [:handler] (start-message-handler)
-    :else (no-match)))
+    [:ingester] (start-server)
+    [:handler] (start-downloader)
+    :else (do (log/error "No match, exiting")
+              (System/exit 1))))
 
 (defn -main [& args]
   (when (str/blank? (get-config-value :token))

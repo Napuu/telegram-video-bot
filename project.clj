@@ -26,4 +26,4 @@
   :main ^:skip-aot telegram-video-download-bot.core
   :target-path "target/%s"
 
-  :profiles {:uberjar {:aot :all}})
+  :profiles {:uberjar {}})
