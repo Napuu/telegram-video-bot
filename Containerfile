@@ -1,4 +1,3 @@
-FROM clojure:temurin-19-lein
+FROM scratch
 WORKDIR /app
 
-ENTRYPOINT ["lein"]
