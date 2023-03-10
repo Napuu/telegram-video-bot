@@ -5,6 +5,7 @@ pipeline:
       dockerfile: Containerfile
       platforms: linux/amd64
       repo: registry-internal.default.svc.cluster.local/testings3
+      insecure: true
       registry:
         from_secret: registry-host
       tags: latest
