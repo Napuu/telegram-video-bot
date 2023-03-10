@@ -1,4 +1,4 @@
-from debian:stable-slim
+from ubuntu:rolling
 RUN apt-get update -qq && apt-get install -y zip git ffmpeg build-essential leiningen 
 # WORKDIR /app
 # COPY . .
