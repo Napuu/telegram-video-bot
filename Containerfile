@@ -1,4 +1,4 @@
-FROM clojure:temurin-19-lein
+FROM clojure:temurin-17-lein-2.10.0-bullseye
 COPY . .
 RUN lein uberjar
 RUN mv /tmp/target/uberjar/telegram-video-download-bot*-standalone.jar /tmp/out.jar
