@@ -1,14 +1,17 @@
-kind: pipeline
-name: default
+branches: main
 
-steps:
-- name: build dummy docker file and publish
-  image: plugins/docker
-  pull: never
-  settings:
-    repo: docker-registry2.napuu.xyz/testings2
-    tags: latest
-    username:
-      from_secret: registry-user
-    password:
-      from_secret: registry-password
+pipeline:
+
+  publish:
+    image: woodpeckerci/plugin-docker-buildx
+    settings:
+      dockerfile: Containerfile
+      platforms: linux/amd64
+      repo: container-registry.default.svc.cluster.local:5000/testings3
+      tags: latest
+      username: 
+        from_secret: registry-user
+      password:
+        from_secret: registry-password
+    when:
+      event: push
