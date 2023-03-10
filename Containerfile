@@ -1,3 +1,3 @@
-FROM clojure:temurin-19-lein-bullseye-slim
+FROM clojure:lein-slim-bullseye
 WORKDIR /app
 
