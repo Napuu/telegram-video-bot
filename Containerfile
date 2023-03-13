@@ -11,4 +11,4 @@ RUN cd /tmp/yt-dlp && make yt-dlp && mkdir -p /usr/local/bin && mv yt-dlp /usr/l
 
 RUN chmod a+rx /usr/local/bin/yt-dlp
 
-ENTRYPOINT ["run"]
+CMD ["./run"]
