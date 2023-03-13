@@ -4,7 +4,7 @@ import std/[macros, osproc, strutils, streams, sequtils, sugar, oids, os, loggin
 proc getVideoDimensions*(path: string): (int, int) =
   let
     args = ["-v", "error", "-select_streams", "v", "-show_entries", "stream=width,height", "-of", "csv=p=0:s=x", path]
-    p = startProcess("/opt/homebrew/bin/ffprobe", args=args)
+    p = startProcess(getEnv("FFPROBE_LOCATION"), args=args)
     output = collect(for line in peekableOutputStream(p).lines: line)[0]
     outputSplit = output.split("x")
     width = outputSplit[0].parseInt
