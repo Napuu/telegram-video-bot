@@ -1,4 +1,5 @@
 FROM nimlang/nim:1.6.10-ubuntu
+ENV DEBIAN_FRONTEND=noninteractive
 RUN apt-get update -qq && apt-get install -y zip git ffmpeg build-essential python3 curl
 WORKDIR /app
 # RUN curl https://nim-lang.org/download/nim-1.6.10-linux_x64.tar.xz > nim.tar.xz
