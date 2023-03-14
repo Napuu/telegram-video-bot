@@ -1,4 +1,4 @@
-FROM nimlang/nim:1.6.10
+FROM nimlang/nim
 WORKDIR /app
 RUN nimble install https://github.com/status-im/nim-chronicles -y
 RUN nim c --gc:arc --threads:on -d:chronicles_runtime_filtering:on -d:ssl -d:release --hints:off --out=bot src/bot.nim
