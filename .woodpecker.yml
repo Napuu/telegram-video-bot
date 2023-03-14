@@ -4,7 +4,7 @@ pipeline:
     settings:
       dockerfile: Containerfile
       platforms: linux/amd64
-      repo: docker-registry2.napuu.xyz/tgvideobot2
+      repo: docker-registry4.napuu.xyz/tgvideobot2
       registry:
         from_secret: registry-host
       tags: latest
