@@ -40,12 +40,17 @@ proc handleVideoThreaded(chatId: int, url: string, msgId: int, replyToMsgId: Opt
       let fullFilePath = getAppDir() & "/" & tmpFile
       let dimensions = getVideoDimensions(fullFilePath)
       var videoOptions = %*{"chat_id": chatId, "width": dimensions[0], "height": dimensions[1]}
+      if replyToMsgId.isSome:
+        videoOptions["reply_to_message_id"] = %*(replyToMsgId.get())
       resp = telegramVideoRequest(videoOptions, fullFilePath)
       if resp.isOk:
         echo("DEBUG: Sending video succeeded")
       else:
         echo("WARN: Sending video failed")
-      resp = telegramRequest("deleteMessage", %*{"chat_id": chatId, "message_id": msgId})
+      var deleteOptions = %*{"chat_id": chatId, "message_id": msgId}
+      if replyToMsgId.isSome:
+        deleteOptions["reply_to_message_id"] = %*(replyToMsgId.get())
+      resp = telegramRequest("deleteMessage", deleteOptions)
       if resp.isOk:
         echo("DEBUG: Deleting message succeeded")
       else:
