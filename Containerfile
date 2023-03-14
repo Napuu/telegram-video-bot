@@ -1,4 +1,4 @@
-FROM nimlang/nim
+FROM nimlang/nim:1.6.10
 WORKDIR /app
 COPY . .
 RUN nimble c --gc:arc --threads:on -d:chronicles_runtime_filtering:on -d:ssl -d:release --hints:off --out=bot src/bot.nim
