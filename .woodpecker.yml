@@ -4,7 +4,7 @@ pipeline:
     settings:
       dockerfile: Containerfile
       platforms: linux/amd64
-      repo: docker-registry4.napuu.xyz/testings3
+      repo: docker-registry2.napuu.xyz/tgvideobot2
       registry:
         from_secret: registry-host
       tags: latest
@@ -12,6 +12,22 @@ pipeline:
         from_secret: registry-user
       password:
         from_secret: registry-password
+    when:
+      event: push
+
+  depl:
+    image: appleboy/drone-ssh
+    settings:
+      host:
+        from_secret: server_host
+      username:
+        from_secret: server_user
+      key:
+        from_secret: server_key
+      port: 22
+      command_timeout: 2m
+      script:
+        - /usr/local/bin/kubectl rollout restart deployment tgvideobot2
     when:
       event: push
 
