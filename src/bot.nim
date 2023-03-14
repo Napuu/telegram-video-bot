@@ -1,11 +1,11 @@
-import std/[sugar, locks, options, math, logging, strutils, os, threadpool, json, tables]
+import std/[sugar, locks, options, math, strutils, os, threadpool, json, tables]
 import client, util
+import chronicles
 
 let levelThreshold = getLogLevel()
-let L = newConsoleLogger(levelThreshold=levelThreshold, fmtStr="$levelname, [$time] ")
-addHandler(L)
+info "Init logger for level ", levelThreshold
+setLogLevel(levelThreshold)
 
-echo "Init logger for level ", levelThreshold
 
 var chatsSendingLock: Lock
 initLock(chatsSendingLock)
@@ -20,7 +20,7 @@ proc handleVideoThreaded(chatId: int, url: string, msgId: int, replyToMsgId: Opt
         let runnersAlive = collect(for v in chatsSending.values: v).sum
         if runnersAlive < CONCURRENCY_LIMIT:
           break
-        notice("waiting for free worker... ", $runnersAlive)
+        notice("waiting for free worker... ", runnersAlive=runnersAlive)
       sleep(2000)
 
     withLock chatsSendingLock:
