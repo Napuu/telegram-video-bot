@@ -8,4 +8,4 @@ RUN cd /tmp/yt-dlp && make yt-dlp && mkdir -p /usr/local/bin && mv yt-dlp /usr/l
 ENV YTDLP_LOCATION=/usr/local/bin/yt-dlp
 ENV FFPROBE_LOCATION=/usr/bin/ffprobe
 RUN chmod a+rx /usr/local/bin/yt-dlp
-CMD ["/app/run"]
+CMD ["/app/bot"]
