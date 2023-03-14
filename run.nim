@@ -3,6 +3,9 @@ import client, util
 
 var L = newConsoleLogger(levelThreshold=getLogLevel(), fmtStr="$levelname, [$time] ")
 addHandler(L)
+# something strange is happening at containers
+# and logs are not printed??
+echo "Init logger"
 
 var chatsSendingLock: Lock
 initLock(chatsSendingLock)
