@@ -1,11 +1,10 @@
 import std/[sugar, locks, options, math, logging, strutils, os, threadpool, json, tables]
 import client, util
 
-var L = newConsoleLogger(levelThreshold=getLogLevel(), fmtStr="$levelname, [$time] ")
-addHandler(L)
-# something strange is happening at containers
-# and logs are not printed??
-echo "Init logger"
+let levelThreshold = getLogLevel()
+var L = newConsoleLogger(levelThreshold=levelThreshold, fmtStr="$levelname, [$time] ")
+
+echo "Init logger for level ", levelThreshold
 
 var chatsSendingLock: Lock
 initLock(chatsSendingLock)
