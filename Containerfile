@@ -1,6 +1,5 @@
 FROM nimlang/nim
 WORKDIR /app
-RUN nimble install https://github.com/status-im/nim-chronicles -y
 RUN nim c --gc:arc --threads:on -d:chronicles_runtime_filtering:on -d:ssl -d:release --hints:off --out=bot src/bot.nim
 RUN apt-get -qq update && DEBIAN_FRONTEND=noninteractive apt-get -qq install zip git ffmpeg build-essential python3 > /dev/null
 RUN cd /tmp && git clone https://github.com/yt-dlp/yt-dlp
