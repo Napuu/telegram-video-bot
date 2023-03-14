@@ -1,8 +1,2 @@
 *
 !src
-!project.clj
-!target
-!resources
-!run.nim
-!util.nim
-!client.nim

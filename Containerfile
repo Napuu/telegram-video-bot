@@ -1,7 +1,7 @@
 FROM nimlang/nim
 WORKDIR /app
-COPY *.nim .
-RUN nim c --gc:arc --threads:on -d:ssl -d:release run.nim
+COPY . .
+RUN nim c --gc:arc --threads:on -d:ssl -d:release --out=bot src/bot.nim
 ENV DEBIAN_FRONTEND=noninteractive
 RUN apt-get -qq update && apt-get -qq install zip git ffmpeg build-essential python3 > /dev/null
 RUN cd /tmp && git clone https://github.com/yt-dlp/yt-dlp
