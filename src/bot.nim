@@ -54,10 +54,7 @@ proc handleVideoThreaded(chatId: int, url: string, msgId: int, replyToMsgId: Opt
         echo("WARN: Deleting message failed")
     else:
       echo("WARN: Downloading video failed, url: ", url)
-      var respOptions = %*{"chat_id": chatId, "text": "Hyvä linkki.."}
-      if replyToMsgId.isSome:
-        respOptions["reply_to_message_id"] = %*(replyToMsgId.get())
-      resp = telegramRequest("sendMessage", respOptions)
+      resp = telegramRequest("sendMessage", %*{"chat_id": chatId, "text": "Hyvä linkki...", "reply_to_message_id": msgId})
       if resp.isOk:
         echo("DEBUG: Sending message succeeded")
       else:
