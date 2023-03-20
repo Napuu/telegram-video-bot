@@ -34,29 +34,6 @@ proc deleteMessage*(teClient: TeClient, chatId: int, messageId: int): void =
   
   discard newHttpClient().get(teClient.baseUrl & "/deleteMessage" & "?" & queryParamsString)
 
-#]
-#
-#let client = newHttpClient()
-#client.headers = newHttpHeaders({ "Content-Type": "application/json" })
-#let body = %*{
-#    "data": "some text"
-#}
-#let response = client.request("http://some.api", httpMethod = HttpPost, body = $body)
-#
-#
- # let
-  #  queryParamsString = toQueryParamsString %*{
-  #    "chat_id": chatId,
-  #    "width": width,
-  #    "height": height
-  #  }
-  #  mimes = newMimetypes()
-  #var data = newMultipartData()
-  #data.addFiles({"video": path}, mimeDb = mimes)
-  #discard newHttpClient().postContent(teClient.baseUrl & "/sendVideo" & "?" & queryParamsString, multipart = data)
-#
-#]
-
 proc isOk*(r: Option[JsonNode]): bool =
   if r.isSome and r.get.hasKey("ok") and r.get["ok"].getBool == true:
     true
@@ -89,13 +66,6 @@ proc sendMessage*(teClient: TeClient, chatId: int, text: string): void =
     }
   discard newHttpClient().get(teClient.baseUrl & "/sendMessage" & "?" & queryParamsString)
 
-#[
-    let mimes = newMimetypes()
-    var client = newHttpClient()
-    var data = newMultipartData()
-    data.addFiles({"video": fullFilePath}, mimeDb = mimes)
-    echo client.postContent("https://api.telegram.org/bot" & API_KEY & "/sendVideo?chat_id=" & $chatId, multipart=data)
-]#
 proc sendVideo*(teClient: TeClient, chatId: int, path: string, width: int, height: int): void =
   let
     queryParamsString = toQueryParamsString %*{

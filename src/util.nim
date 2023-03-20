@@ -1,4 +1,4 @@
-import std/[macros, osproc, strutils, streams, sequtils, sugar, oids, os]
+import std/[macros, osproc, strutils, streams, sequtils, sugar, oids, os, logging]
 
 # https://stackoverflow.com/a/29585066/1550017
 proc getVideoDimensions*(path: string): (int, int) =
@@ -25,10 +25,13 @@ proc downloadVideo*(url: string): (string, int) =
   let exitCode = waitForExit(p)
   (tmpFile, exitCode)
 
-# proc getLogLevel*(): LogLevel =
-#   let level = getEnv("LOG_LEVEL")
-#   if level == "DEBUG": DEBUG
-#   else: NOTICE
+proc getLogLevel(): Level =
+  let level = getEnv("LOG_LEVEL")
+  if level == "DEBUG": lvlDebug
+  else: lvlNotice
+
+proc initConsoleLogger*() =
+  addHandler(newConsoleLogger(getLogLevel()))
 
 macro toQueryParamsString*(s: untyped): untyped =
   nnkStmtList.newTree(
