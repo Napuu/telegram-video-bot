@@ -19,7 +19,7 @@ proc ytdlpBaseArgs(output: string): seq[string] = @["--merge-output-format", "mp
                        "-S", "codec:h264"]
 
 proc downloadVideo*(url: string): (string, int) =
-  let tmpFile = $genOid() & ".mp4"
+  let tmpFile = "/tmp/" & $genOid() & ".mp4"
   let args = concat(@[url], ytdlpBaseArgs(tmpFile))
   let p = startProcess(getEnv("YTDLP_LOCATION"), args=args)
   let exitCode = waitForExit(p)
