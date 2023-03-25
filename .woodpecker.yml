@@ -22,7 +22,7 @@ pipeline:
       host:
         from_secret: PROD_SERVER_HOST
       username:
-        from_secret: PROD-SERVER_USER
+        from_secret: PROD_SERVER_USER
       key:
         from_secret: PROD_SERVER_KEY
       port: 22
