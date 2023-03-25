@@ -27,8 +27,10 @@ pipeline:
         from_secret: PROD_SERVER_KEY
       port: 22
       command_timeout: 2m
+      envs:
+        - PROD_SERVER_DEPLOY_CMD
       script:
-        - ${PROD_SERVER_DEPLOY_CMD}
+        - $PROD_SERVER_DEPLOY_CMD
     when:
       event: push
 
