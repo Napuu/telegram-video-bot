@@ -30,7 +30,7 @@ pipeline:
       envs:
         - PROD_SERVER_DEPLOY_CMD
       script:
-        - $$PROD_SERVER_DEPLOY_CMD
+        - fish -c "$$PROD_SERVER_DEPLOY_CMD"
     when:
       event: push
 
