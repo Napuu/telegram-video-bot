@@ -1,3 +1,5 @@
+New iteration of bot doing this same thing (and more): https://github.com/napuu/gpsp-bot
+
 # telegram-video-download-bot
 
 Telegram Bot for downloading videos sent to group chats. The original message is also deleted, so chat history doesn't become cluttered.  
